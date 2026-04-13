@@ -1,0 +1,208 @@
+{
+  "version": "1.0.0",
+  "phase": "PAPER_TRADING",
+  "fase": "Fase 1 - Semana 1-2",
+  "capital_total": 13000,
+  "capital_reserva": 2000,
+  "capital_operativo": 13000,
+
+  "systems": {
+    "asian_session": {
+      "enabled": true,
+      "name": "Asian Session Specialist",
+      "capital": 3500,
+      "porcentaje_portafolio": 0.269,
+      "horario": {
+        "activo": true,
+        "timezone": "EST",
+        "hora_inicio": "20:00",
+        "hora_fin": "00:00",
+        "dias": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+      },
+      "parameters": {
+        "z_score_threshold": 1.5,
+        "rsi_long_threshold": 35,
+        "rsi_short_threshold": 65,
+        "position_size_base": 0.02,
+        "stop_loss_pct": 0.01,
+        "take_profit_pct": 0.02
+      },
+      "use_ai_ensemble": true,
+      "news_filter_enabled": true,
+      "take_partial_enabled": true
+    },
+
+    "mean_reversion": {
+      "enabled": true,
+      "name": "Mean Reversion V1 + Take Partial",
+      "capital": 3500,
+      "porcentaje_portafolio": 0.269,
+      "horario": {
+        "activo": true,
+        "excluir_horarios": ["20:00-00:00"],
+        "timezone": "EST",
+        "dias": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+      },
+      "parameters": {
+        "z_score_entry": 1.5,
+        "z_score_exit": 0.5,
+        "rsi_filter": true,
+        "position_size_base": 0.02,
+        "stop_loss_pct": 0.01,
+        "take_profit1_pct": 0.01,
+        "take_profit2_pct": 0.02,
+        "tp1_close_pct": 0.5
+      },
+      "use_ai_ensemble": true,
+      "news_filter_enabled": true,
+      "take_partial_enabled": true
+    },
+
+    "us_session_open": {
+      "enabled": true,
+      "name": "US Session Open Specialist",
+      "capital": 1000,
+      "porcentaje_portafolio": 0.077,
+      "horario": {
+        "activo": true,
+        "timezone": "EST",
+        "hora_inicio": "09:30",
+        "hora_fin": "11:00",
+        "dias": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+      },
+      "parameters": {
+        "lookback_periods": 20,
+        "breakout_threshold": 0.001,
+        "rsi_filter": true,
+        "position_size_base": 0.015,
+        "stop_loss_pct": 0.01,
+        "take_profit_pct": 0.015
+      },
+      "use_ai_ensemble": true,
+      "news_filter_enabled": true,
+      "take_partial_enabled": false
+    },
+
+    "arbitraje": {
+      "enabled": true,
+      "name": "Statistical Arbitraje Expandido",
+      "capital": 5000,
+      "porcentaje_portafolio": 0.385,
+      "horario": {
+        "activo": true,
+        "timezone": "UTC",
+        "dias": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+      },
+      "parameters": {
+        "pairs": [
+          {
+            "symbol1": "BTCUSDT",
+            "symbol2": "ETHUSDT",
+            "name": "BTC-ETH",
+            "capital": 1000,
+            "z_score_entry": 2.0,
+            "z_score_exit": 0.5
+          },
+          {
+            "symbol1": "SOLUSDT",
+            "symbol2": "ETHUSDT",
+            "name": "SOL-ETH",
+            "capital": 1000,
+            "z_score_entry": 2.0,
+            "z_score_exit": 0.5
+          },
+          {
+            "symbol1": "BNBUSDT",
+            "symbol2": "ETHUSDT",
+            "name": "BNB-ETH",
+            "capital": 1000,
+            "z_score_entry": 2.0,
+            "z_score_exit": 0.5
+          },
+          {
+            "symbol1": "MATICUSDT",
+            "symbol2": "ETHUSDT",
+            "name": "MATIC-ETH",
+            "capital": 1000,
+            "z_score_entry": 2.0,
+            "z_score_exit": 0.5
+          },
+          {
+            "symbol1": "AVAXUSDT",
+            "symbol2": "ETHUSDT",
+            "name": "AVAX-ETH",
+            "capital": 1000,
+            "z_score_entry": 2.0,
+            "z_score_exit": 0.5
+          }
+        ],
+        "max_correlation_between_pairs": 0.7,
+        "position_size_base": 0.5
+      },
+      "use_ai_ensemble": true,
+      "news_filter_enabled": false,
+      "take_partial_enabled": false
+    }
+  },
+
+  "ai_integration": {
+    "enabled": true,
+    "api_url": "http://localhost:8000",
+    "timeout": 5000,
+    "retry_attempts": 2,
+    "fallback_on_error": true
+  },
+
+  "news_filter": {
+    "enabled": true,
+    "pre_event_window": 2,
+    "post_event_window": 4,
+    "impact_levels": ["ALTO", "EXTREMO"],
+    "events": ["FOMC", "CPI", "NFP"]
+  },
+
+  "risk_management": {
+    "circuit_breakers": {
+      "max_daily_loss_pct": 0.03,
+      "max_weekly_loss_pct": 0.10,
+      "max_drawdown_pct": 0.15,
+      "pause_on_trigger": true
+    },
+    "position_limits": {
+      "max_position_size_pct": 0.10,
+      "max_total_exposure_pct": 0.95,
+      "min_capital_reserve": 0.05
+    }
+  },
+
+  "monitoring": {
+    "log_level": "INFO",
+    "log_trades": true,
+    "log_signals": true,
+    "log_ai_decisions": true,
+    "save_to_file": true,
+    "metrics_interval": 60000
+  },
+
+  "paper_trading": {
+    "mode": "PAPER",
+    "simulation": {
+      "slippage_pct": 0.0005,
+      "commission_pct": 0.001,
+      "latency_ms": 100
+    },
+    "execution": {
+      "auto_execute": true,
+      "require_ai_approval": false,
+      "min_ai_confidence": 0.70
+    }
+  },
+
+  "criteria_exito": {
+    "win_rate_minimo": 0.45,
+    "pnl_minimo_pct": 0.05,
+    "max_dd_maximo_pct": 0.15,
+    "trades_minimos": 50,
+    "duracion_semanas": 2
+  }
+}

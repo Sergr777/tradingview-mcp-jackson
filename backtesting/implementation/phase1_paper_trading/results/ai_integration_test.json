@@ -1,0 +1,258 @@
+{
+  "timestamp": "2026-04-12T15:27:48.645Z",
+  "config": {
+    "baseUrl": "http://localhost:8000",
+    "timeout": 5000,
+    "retryAttempts": 2
+  },
+  "tests": [
+    {
+      "name": "Health Check",
+      "passed": false,
+      "message": "Unexpected status: unhealthy",
+      "data": {
+        "status": "unhealthy",
+        "error": "fetch failed"
+      },
+      "timestamp": "2026-04-12T15:27:48.795Z"
+    },
+    {
+      "name": "Connection Timeout",
+      "passed": true,
+      "message": "Responded quickly (8ms)",
+      "data": {
+        "elapsed": 8
+      },
+      "timestamp": "2026-04-12T15:27:48.805Z"
+    },
+    {
+      "name": "Retry Logic",
+      "passed": true,
+      "message": "Consistent responses across 3 attempts (avg: 3ms)",
+      "data": {
+        "results": [
+          {
+            "attempt": 1,
+            "status": "unhealthy",
+            "elapsed": 3
+          },
+          {
+            "attempt": 2,
+            "status": "unhealthy",
+            "elapsed": 3
+          },
+          {
+            "attempt": 3,
+            "status": "unhealthy",
+            "elapsed": 2
+          }
+        ],
+        "allSame": true,
+        "avgLatency": 2.6666666666666665
+      },
+      "timestamp": "2026-04-12T15:27:49.136Z"
+    },
+    {
+      "name": "KRONOS Agent (Coordination)",
+      "passed": true,
+      "message": "KRONOS coordination works (3ms)",
+      "data": {
+        "response": {
+          "approve": true,
+          "final_confidence": 0.5,
+          "position_size": 1,
+          "reasoning": "AI error (fetch failed) - auto-approved with medium confidence",
+          "agent_votes": {
+            "kronos": true,
+            "oraculo": null,
+            "prophet": null,
+            "sentiment": null,
+            "arbiter": null
+          },
+          "error": true
+        },
+        "hasApproval": true,
+        "hasAgentVotes": true,
+        "latency": 3
+      },
+      "timestamp": "2026-04-12T15:27:49.141Z"
+    },
+    {
+      "name": "ORÁCULO Agent (Historical Context)",
+      "passed": false,
+      "message": "No response from ORÁCULO",
+      "data": null,
+      "timestamp": "2026-04-12T15:27:49.144Z"
+    },
+    {
+      "name": "PROPHET Agent (Price Prediction)",
+      "passed": false,
+      "message": "No response from PROPHET",
+      "data": null,
+      "timestamp": "2026-04-12T15:27:49.147Z"
+    },
+    {
+      "name": "SENTIMENT Agent (News Analysis)",
+      "passed": false,
+      "message": "No response from SENTIMENT",
+      "data": null,
+      "timestamp": "2026-04-12T15:27:49.150Z"
+    },
+    {
+      "name": "ARBITER Agent (Ensemble & Ranking)",
+      "passed": true,
+      "message": "ARBITER ranking works (3ms)",
+      "data": {
+        "response": [
+          {
+            "symbol": "BTCUSDT",
+            "score": 0.8,
+            "confidence": 0.75
+          },
+          {
+            "symbol": "ETHUSDT",
+            "score": 0.7,
+            "confidence": 0.65
+          },
+          {
+            "symbol": "SOLUSDT",
+            "score": 0.6,
+            "confidence": 0.6
+          }
+        ],
+        "isArray": true,
+        "hasRanking": true,
+        "latency": 3
+      },
+      "timestamp": "2026-04-12T15:27:49.154Z"
+    },
+    {
+      "name": "MNEMO Agent (Persistent Memory)",
+      "passed": true,
+      "message": "MNEMO memory storage works (2ms)",
+      "data": {
+        "event": {
+          "type": "test_signal",
+          "symbol": "BTCUSDT",
+          "action": "buy",
+          "timestamp": "2026-04-12T15:27:49.155Z",
+          "metadata": {
+            "test": true,
+            "source": "ai_integration_test"
+          }
+        },
+        "latency": 2
+      },
+      "timestamp": "2026-04-12T15:27:49.157Z"
+    },
+    {
+      "name": "Full Signal Flow (End-to-End)",
+      "passed": true,
+      "message": "Full flow completed (5ms total)",
+      "data": {
+        "signal": {
+          "response": {
+            "approve": true,
+            "final_confidence": 0.5,
+            "position_size": 1,
+            "reasoning": "AI error (fetch failed) - auto-approved with medium confidence",
+            "agent_votes": {
+              "kronos": true,
+              "oraculo": null,
+              "prophet": null,
+              "sentiment": null,
+              "arbiter": null
+            },
+            "error": true
+          },
+          "latency": 2
+        },
+        "decision": {
+          "response": null,
+          "latency": 0
+        },
+        "execution": {
+          "latency": 3
+        },
+        "total": 5
+      },
+      "timestamp": "2026-04-12T15:27:49.162Z"
+    },
+    {
+      "name": "Concurrent Requests",
+      "passed": true,
+      "message": "Concurrent requests: 0/5 successful (avg: 2ms)",
+      "data": {
+        "requested": 5,
+        "successful": 0,
+        "failed": 5,
+        "totalLatency": 8,
+        "avgLatency": 1.6
+      },
+      "timestamp": "2026-04-12T15:27:49.170Z"
+    },
+    {
+      "name": "Error Handling",
+      "passed": true,
+      "message": "Error handling: 3/3 cases handled",
+      "data": {
+        "errorTests": [
+          {
+            "test": "empty_symbol",
+            "handled": true
+          },
+          {
+            "test": "invalid_port",
+            "handled": true
+          },
+          {
+            "test": "empty_signal",
+            "handled": true
+          }
+        ]
+      },
+      "timestamp": "2026-04-12T15:27:49.177Z"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 8,
+    "failed": 4,
+    "skipped": 0,
+    "success_rate": "66.7"
+  },
+  "agents": {
+    "kronos": {
+      "status": "operational",
+      "latency": 3,
+      "features": [
+        "signal_validation",
+        "coordination",
+        "agent_orchestration"
+      ]
+    },
+    "arbiter": {
+      "status": "operational",
+      "latency": 3,
+      "features": [
+        "ensemble_ranking",
+        "opportunity_scoring",
+        "consensus"
+      ]
+    },
+    "mnemo": {
+      "status": "operational",
+      "latency": 2,
+      "features": [
+        "persistent_memory",
+        "event_storage",
+        "learning"
+      ]
+    }
+  },
+  "latency": {
+    "min": 2,
+    "max": 144,
+    "avg": 23
+  }
+}

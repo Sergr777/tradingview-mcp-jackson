@@ -1,0 +1,22 @@
+{
+  "system": "TurtleSoupCTRULTRA",
+  "stats": {
+    "totalTrades": 0,
+    "winningTrades": 0,
+    "losingTrades": 0,
+    "winRate": 0,
+    "totalPnL": 0,
+    "avgPnL": 0,
+    "grossProfit": 0,
+    "grossLoss": 0,
+    "profitFactor": 0,
+    "maxDrawdown": 0,
+    "sharpeRatio": 0
+  },
+  "trades": [],
+  "detectionStats": {
+    "highBreakouts": 0,
+    "lowBreakouts": 0,
+    "signalsDetected": 0
+  }
+}

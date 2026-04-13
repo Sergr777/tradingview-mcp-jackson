@@ -1,0 +1,43 @@
+{
+  "config": {
+    "symbol": "BNBUSDT",
+    "initialCapital": 10000,
+    "basePositionSize": 0.015,
+    "emaShort": 9,
+    "emaLong": 21,
+    "rsiPeriod": 14,
+    "rsiOversold": 30,
+    "rsiOverbought": 70,
+    "atrPeriod": 14,
+    "atrMultiplier": 1.5,
+    "riskRewardRatio": 2,
+    "minRiskPercent": 0.003,
+    "maxRiskPercent": 0.008,
+    "minVolume": 1000000,
+    "volatilityThreshold": 0.02,
+    "seasonalMultiplier": {
+      "month1": 1.5,
+      "months4to6": 0.5,
+      "normal": 1
+    },
+    "maxHoldTime": 604800000,
+    "outputFile": "C:\\Users\\gesti\\invest_criptoai\\tradingview-mcp-jackson\\logs\\week1\\backtest_bnb_ml_1year.json",
+    "logFile": "C:\\Users\\gesti\\invest_criptoai\\tradingview-mcp-jackson\\logs\\week1\\backtest_bnb_ml_1year.log"
+  },
+  "summary": {
+    "patternsDetected": 0,
+    "totalTrades": 0,
+    "winningTrades": 0,
+    "losingTrades": 0,
+    "winRate": 0,
+    "totalPnL": 0,
+    "finalBalance": 10000,
+    "initialBalance": 10000,
+    "totalReturn": 0,
+    "executionTime": "379.58"
+  },
+  "trades": [],
+  "capitalHistory": [
+    10000
+  ]
+}

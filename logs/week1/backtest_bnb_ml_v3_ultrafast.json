@@ -1,0 +1,12 @@
+{
+  "summary": {
+    "patternsDetected": 0,
+    "totalTrades": 0,
+    "winningTrades": 0,
+    "winRate": 0,
+    "totalPnL": 0,
+    "finalBalance": 10000,
+    "totalReturn": 0
+  },
+  "trades": []
+}

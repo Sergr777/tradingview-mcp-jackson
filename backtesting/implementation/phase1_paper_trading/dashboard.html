@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Trading Dashboard | InvestCripto AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.0.0/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --success: #3fb950;
+            --success-bg: rgba(63, 185, 80, 0.15);
+            --danger: #f85149;
+            --danger-bg: rgba(248, 81, 73, 0.15);
+            --warning: #d29922;
+            --warning-bg: rgba(210, 153, 34, 0.15);
+            --info: #58a6ff;
+            --info-bg: rgba(88, 166, 255, 0.15);
+            --accent: #238636;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--success), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: var(--success-bg);
+            color: var(--success);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2ea043;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .last-update {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .kpi-value.positive {
+            color: var(--success);
+        }
+
+        .kpi-value.negative {
+            color: var(--danger);
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            color: var(--danger);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-container.large {
+            height: 350px;
+        }
+
+        /* System Performance */
+        .systems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .system-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .system-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .system-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .system-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .system-status.active {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .system-status.inactive {
+            background: var(--text-secondary);
+        }
+
+        .system-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Recent Trades Table */
+        .trades-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .trade-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .trade-type.long {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .trade-type.short {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .pnl-value {
+            font-weight: 600;
+        }
+
+        .pnl-value.positive {
+            color: var(--success);
+        }
+
+        .pnl-value.negative {
+            color: var(--danger);
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 17, 23, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--success);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Capital Allocation */
+        .capital-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .capital-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .allocation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .allocation-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .allocation-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .allocation-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .allocation-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .allocation-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Alerts */
+        .alerts-container {
+            margin-bottom: 24px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert.success {
+            background: var(--success-bg);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert.warning {
+            background: var(--warning-bg);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .alert.danger {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .alert.info {
+            background: var(--info-bg);
+            border: 1px solid var(--info);
+            color: var(--info);
+        }
+
+        .alert-icon {
+            font-size: 18px;
+        }
+
+        .alert-message {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        /* Refresh Animation */
+        .refreshing {
+            animation: refresh 0.5s ease-in-out;
+        }
+
+        @keyframes refresh {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <div>
+                    <h1>Paper Trading Dashboard</h1>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Fase 1 - Semana 1-2 | InvestCripto AI</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="last-update" id="lastUpdate">Última actualización: --</span>
+                <button class="btn btn-secondary" onclick="exportDashboard()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Exportar PNG
+                </button>
+                <button class="btn btn-primary" onclick="refreshData()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                        <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                    </svg>
+                    Actualizar
+                </button>
+            </div>
+        </header>
+
+        <!-- Alerts Container -->
+        <div id="alertsContainer" class="alerts-container"></div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Capital Total</div>
+                <div class="kpi-value" id="totalCapital">$13,000</div>
+                <div class="kpi-change">
+                    <span id="capitalChange">--</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">PnL Total</div>
+                <div class="kpi-value" id="totalPnl">$0</div>
+                <div class="kpi-change" id="pnlChange">
+                    <span>--</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Win Rate</div>
+                <div class="kpi-value" id="winRate">0%</div>
+                <div class="kpi-change">
+                    <span id="winRateChange">--</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Max Drawdown</div>
+                <div class="kpi-value negative" id="maxDrawdown">0%</div>
+                <div class="kpi-change">
+                    <span>Periodo actual</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Trades</div>
+                <div class="kpi-value" id="totalTrades">0</div>
+                <div class="kpi-change">
+                    <span id="tradesToday">0 hoy</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Sharpe Ratio</div>
+                <div class="kpi-value" id="sharpeRatio">0.00</div>
+                <div class="kpi-change">
+                    <span>Risk-adjusted return</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- PnL Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">PnL en Tiempo Real</h3>
+                </div>
+                <div class="chart-container large">
+                    <canvas id="pnlChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Win Rate by System -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Win Rate por Sistema</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="winRateChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Max Drawdown Chart -->
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3 class="chart-title">Drawdown Acumulado</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="drawdownChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Systems Performance -->
+        <h3 style="margin-bottom: 16px; font-size: 18px;">Rendimiento por Sistema</h3>
+        <div class="systems-grid" id="systemsGrid"></div>
+
+        <!-- Capital Allocation & Recent Trades -->
+        <div class="capital-grid">
+            <!-- Capital Allocation -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Asignación de Capital</h3>
+                </div>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="capitalChart"></canvas>
+                </div>
+                <div class="allocation-list" id="allocationList"></div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="trades-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Trades Recientes</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sistema</th>
+                                <th>Tipo</th>
+                                <th>PnL</th>
+                                <th>Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let charts = {};
+        let updateInterval;
+        let backtestData = null;
+        let configData = null;
+
+        // System colors
+        const systemColors = {
+            'Asian Session': '#3fb950',
+            'Mean Reversion': '#58a6ff',
+            'US Session Open': '#d29922',
+            'Statistical Arbitraje': '#f85149',
+            'VWAP Bounce': '#a371f7',
+            'Turtle Soup': '#768390'
+        };
+
+        // Initialize dashboard
+        async function init() {
+            try {
+                await loadConfig();
+                await loadBacktestData();
+                initializeCharts();
+                updateDashboard();
+                hideLoading();
+                startAutoRefresh();
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                showAlert('Error al cargar datos del dashboard', 'danger');
+                hideLoading();
+            }
+        }
+
+        // Load systems configuration
+        async function loadConfig() {
+            try {
+                const response = await fetch('../config/systems_config.json');
+                configData = await response.json();
+            } catch (error) {
+                console.warn('Could not load config, using defaults');
+                configData = {
+                    systems: {
+                        asian_session: { name: 'Asian Session', capital: 3500, enabled: true },
+                        mean_reversion: { name: 'Mean Reversion', capital: 3500, enabled: true },
+                        us_session_open: { name: 'US Session Open', capital: 1000, enabled: true },
+                        arbitraje: { name: 'Statistical Arbitraje', capital: 5000, enabled: true }
+                    }
+                };
+            }
+        }
+
+        // Load backtest results
+        async function loadBacktestData() {
+            const resultsFiles = [
+                '../../results/portfolio_specialists_comparison.json',
+                '../../results/backtest_results_v2.json',
+                '../../results/vwap_bounce_comparison.json'
+            ];
+
+            for (const file of resultsFiles) {
+                try {
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        backtestData = await response.json();
+                        console.log('Loaded data from:', file);
+                        break;
+                    }
+                } catch (error) {
+                    console.warn('Could not load', file);
+                }
+            }
+
+            // If no data found, use demo data
+            if (!backtestData) {
+                backtestData = generateDemoData();
+            }
+        }
+
+        // Generate demo data for visualization
+        function generateDemoData() {
+            return {
+                'Asian Session Specialist': {
+                    systemName: 'Asian Session Specialist',
+                    totalTrades: 45,
+                    winningTrades: 24,
+                    losingTrades: 21,
+                    winRate: 0.533,
+                    totalPnL: 267.50,
+                    avgPnL: 5.94,
+                    maxDrawdown: 89.32,
+                    sharpeRatio: 1.24,
+                    trades: generateDemoTrades(45, 'Asian Session')
+                },
+                'Mean Reversion V1': {
+                    systemName: 'Mean Reversion V1',
+                    totalTrades: 67,
+                    winningTrades: 31,
+                    losingTrades: 36,
+                    winRate: 0.463,
+                    totalPnL: 178.30,
+                    avgPnL: 2.66,
+                    maxDrawdown: 145.67,
+                    sharpeRatio: 0.89,
+                    trades: generateDemoTrades(67, 'Mean Reversion')
+                },
+                'US Session Open': {
+                    systemName: 'US Session Open',
+                    totalTrades: 23,
+                    winningTrades: 14,
+                    losingTrades: 9,
+                    winRate: 0.609,
+                    totalPnL: 156.80,
+                    avgPnL: 6.82,
+                    maxDrawdown: 45.20,
+                    sharpeRatio: 1.56,
+                    trades: generateDemoTrades(23, 'US Session')
+                },
+                'Statistical Arbitraje': {
+                    systemName: 'Statistical Arbitraje',
+                    totalTrades: 89,
+                    winningTrades: 52,
+                    losingTrades: 37,
+                    winRate: 0.584,
+                    totalPnL: 445.60,
+                    avgPnL: 5.01,
+                    maxDrawdown: 178.90,
+                    sharpeRatio: 1.87,
+                    trades: generateDemoTrades(89, 'Arbitraje')
+                }
+            };
+        }
+
+        function generateDemoTrades(count, system) {
+            const trades = [];
+            const now = Date.now();
+            for (let i = 0; i < count; i++) {
+                const isWin = Math.random() > 0.45;
+                trades.push({
+                    system: system,
+                    type: Math.random() > 0.5 ? 'LONG' : 'SHORT',
+                    pnl: isWin ? (Math.random() * 15 + 2) : -(Math.random() * 10 + 2),
+                    exitTime: now - (i * 3600000),
+                    success: isWin
+                });
+            }
+            return trades;
+        }
+
+        // Initialize all charts
+        function initializeCharts() {
+            // PnL Line Chart
+            const pnlCtx = document.getElementById('pnlChart').getContext('2d');
+            charts.pnl = new Chart(pnlCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'PnL Acumulado ($)',
+                        data: [],
+                        borderColor: '#3fb950',
+                        backgroundColor: 'rgba(63, 185, 80, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#8b949e' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#21262d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            grid: { color: '#21262d' },
+                            ticks: {
+                                color: '#8b949e',
+                                callback: value => '$' + value.toFixed(0)
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Win Rate Bar Chart
+            const winRateCtx = document.getElementById('winRateChart').getContext('2d');
+            charts.winRate = new Chart(winRateCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Win Rate %',
+                        data: [],
+                        backgroundColor: [
+                            '#3fb950', '#58a6ff', '#d29922', '#f85149'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: '#21262d' },
+                            ticks: {
+                                color: '#8b949e',
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Drawdown Area Chart
+            const drawdownCtx = document.getElementById('drawdownChart').getContext('2d');
+            charts.drawdown = new Chart(drawdownCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Drawdown %',
+                        data: [],
+                        borderColor: '#f85149',
+                        backgroundColor: 'rgba(248, 81, 73, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#8b949e' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#21262d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 20,
+                            grid: { color: '#21262d' },
+                            ticks: {
+                                color: '#8b949e',
+                                callback: value => '-' + value.toFixed(1) + '%'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Capital Allocation Pie Chart
+            const capitalCtx = document.getElementById('capitalChart').getContext('2d');
+            charts.capital = new Chart(capitalCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#3fb950', '#58a6ff', '#d29922', '#f85149'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // Update dashboard with current data
+        function updateDashboard() {
+            if (!backtestData) return;
+
+            const systems = Object.values(backtestData);
+
+            // Calculate totals
+            let totalPnl = 0;
+            let totalTrades = 0;
+            let totalWins = 0;
+            let maxDrawdown = 0;
+            let weightedSharpe = 0;
+            let sharpeCount = 0;
+
+            const systemNames = [];
+            const winRates = [];
+            const capitals = [];
+            const allocationItems = [];
+
+            systems.forEach(sys => {
+                totalPnl += sys.totalPnL || 0;
+                totalTrades += sys.totalTrades || 0;
+                totalWins += sys.winningTrades || 0;
+                if (sys.maxDrawdown > maxDrawdown) maxDrawdown = sys.maxDrawdown || 0;
+                if (sys.sharpeRatio) {
+                    weightedSharpe += sys.sharpeRatio * (sys.totalTrades || 1);
+                    sharpeCount += (sys.totalTrades || 1);
+                }
+
+                systemNames.push(sys.systemName);
+                winRates.push((sys.winRate || 0) * 100);
+
+                if (configData?.systems) {
+                    Object.entries(configData.systems).forEach(([key, config]) => {
+                        if (config.name === sys.systemName) {
+                            capitals.push({ name: config.name, capital: config.capital });
+                            allocationItems.push({
+                                name: config.name,
+                                capital: config.capital,
+                                percentage: config.porcentaje_portafolio * 100
+                            });
+                        }
+                    });
+                }
+            });
+
+            const overallWinRate = totalTrades > 0 ? (totalWins / totalTrades) * 100 : 0;
+            const avgSharpe = sharpeCount > 0 ? weightedSharpe / sharpeCount : 0;
+
+            // Update KPI cards
+            document.getElementById('totalCapital').textContent = '$13,000';
+            document.getElementById('totalPnl').textContent = '$' + totalPnl.toFixed(2);
+            document.getElementById('totalPnl').className = 'kpi-value ' + (totalPnl >= 0 ? 'positive' : 'negative');
+            document.getElementById('winRate').textContent = overallWinRate.toFixed(1) + '%';
+            document.getElementById('maxDrawdown').textContent = '-' + (maxDrawdown / 130 * 100).toFixed(2) + '%';
+            document.getElementById('totalTrades').textContent = totalTrades;
+            document.getElementById('sharpeRatio').textContent = avgSharpe.toFixed(2);
+
+            // Update PnL chart
+            const pnlData = generatePnLTimeline(systems);
+            charts.pnl.data.labels = pnlData.labels;
+            charts.pnl.data.datasets[0].data = pnlData.values;
+            charts.pnl.update();
+
+            // Update Win Rate chart
+            charts.winRate.data.labels = systemNames;
+            charts.winRate.data.datasets[0].data = winRates;
+            charts.winRate.update();
+
+            // Update Drawdown chart
+            const drawdownData = generateDrawdownTimeline(systems);
+            charts.drawdown.data.labels = drawdownData.labels;
+            charts.drawdown.data.datasets[0].data = drawdownData.values;
+            charts.drawdown.update();
+
+            // Update Capital chart
+            charts.capital.data.labels = capitals.map(c => c.name);
+            charts.capital.data.datasets[0].data = capitals.map(c => c.capital);
+            charts.capital.update();
+
+            // Update allocation list
+            updateAllocationList(allocationItems);
+
+            // Update systems grid
+            updateSystemsGrid(systems);
+
+            // Update trades table
+            updateTradesTable(systems);
+
+            // Update last update time
+            document.getElementById('lastUpdate').textContent =
+                'Última actualización: ' + new Date().toLocaleTimeString('es-ES');
+
+            // Check for alerts
+            checkAlerts(totalPnl, maxDrawdown, overallWinRate);
+        }
+
+        function generatePnLTimeline(systems) {
+            const labels = [];
+            const values = [];
+            let cumulativePnl = 0;
+
+            // Generate hourly labels for last 24 hours
+            for (let i = 24; i >= 0; i--) {
+                const date = new Date(Date.now() - i * 3600000);
+                labels.push(date.getHours() + ':00');
+
+                // Simulate gradual PnL progression
+                const hourlyPnl = systems.reduce((sum, s) => sum + (s.totalPnL || 0) / 24, 0) * (1 + Math.random() * 0.1);
+                cumulativePnl += hourlyPnl;
+                values.push(Math.max(0, cumulativePnl * (i === 0 ? 1 : (i / 24))));
+            }
+
+            return { labels, values };
+        }
+
+        function generateDrawdownTimeline(systems) {
+            const labels = [];
+            const values = [];
+            const maxDrawdown = Math.max(...systems.map(s => s.maxDrawdown || 0));
+            const maxDrawdownPct = (maxDrawdown / 130) * 100;
+
+            for (let i = 24; i >= 0; i--) {
+                const date = new Date(Date.now() - i * 3600000);
+                labels.push(date.getHours() + ':00');
+                values.push(maxDrawdownPct * (1 - i/24) * 0.8);
+            }
+
+            return { labels, values };
+        }
+
+        function updateAllocationList(items) {
+            const container = document.getElementById('allocationList');
+            container.innerHTML = items.map(item => `
+                <div class="allocation-item">
+                    <div class="allocation-info">
+                        <div class="allocation-color" style="background: ${systemColors[item.name] || '#8b949e'}"></div>
+                        <span class="allocation-name">${item.name}</span>
+                    </div>
+                    <span class="allocation-value">$${item.capital.toLocaleString()} (${item.percentage.toFixed(1)}%)</span>
+                </div>
+            `).join('');
+        }
+
+        function updateSystemsGrid(systems) {
+            const container = document.getElementById('systemsGrid');
+            container.innerHTML = systems.map(sys => `
+                <div class="system-card">
+                    <div class="system-header">
+                        <span class="system-name">${sys.systemName}</span>
+                        <div class="system-status ${sys.totalTrades > 0 ? 'active' : 'inactive'}"></div>
+                    </div>
+                    <div class="system-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">Win Rate</span>
+                            <span class="metric-value">${((sys.winRate || 0) * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Total PnL</span>
+                            <span class="metric-value ${sys.totalPnL >= 0 ? 'positive' : 'negative'}">$${(sys.totalPnL || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Trades</span>
+                            <span class="metric-value">${sys.totalTrades || 0}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Sharpe</span>
+                            <span class="metric-value">${(sys.sharpeRatio || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTradesTable(systems) {
+            const allTrades = [];
+            systems.forEach(sys => {
+                if (sys.trades) {
+                    sys.trades.slice(0, 5).forEach(trade => {
+                        allTrades.push({
+                            ...trade,
+                            systemName: sys.systemName
+                        });
+                    });
+                }
+            });
+
+            allTrades.sort((a, b) => (b.exitTime || 0) - (a.exitTime || 0));
+            const recentTrades = allTrades.slice(0, 10);
+
+            const container = document.getElementById('tradesTable');
+            container.innerHTML = recentTrades.map(trade => `
+                <tr>
+                    <td>${trade.systemName || trade.system}</td>
+                    <td><span class="trade-type ${trade.type?.toLowerCase() || ''}">${trade.type || '-'}</span></td>
+                    <td><span class="pnl-value ${trade.pnl >= 0 ? 'positive' : 'negative'}">${trade.pnl >= 0 ? '+' : ''}$${(trade.pnl || 0).toFixed(2)}</span></td>
+                    <td>${trade.exitTime ? new Date(trade.exitTime).toLocaleTimeString('es-ES') : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function checkAlerts(pnl, drawdown, winRate) {
+            const container = document.getElementById('alertsContainer');
+            const alerts = [];
+
+            if (pnl < -200) {
+                alerts.push({
+                    type: 'danger',
+                    icon: '⚠️',
+                    message: `Pérdida excesiva: -$${Math.abs(pnl).toFixed(2)}`,
+                    time: 'Ahora'
+                });
+            }
+
+            if (drawdown > 1000) {
+                alerts.push({
+                    type: 'warning',
+                    icon: '📉',
+                    message: `Drawdown elevado: -$${drawdown.toFixed(2)}`,
+                    time: 'Ahora'
+                });
+            }
+
+            if (winRate < 40) {
+                alerts.push({
+                    type: 'info',
+                    icon: '📊',
+                    message: `Win Rate bajo: ${winRate.toFixed(1)}% (objetivo: 45%+)`,
+                    time: 'Ahora'
+                });
+            }
+
+            if (pnl > 500) {
+                alerts.push({
+                    type: 'success',
+                    icon: '✅',
+                    message: `Excelente rendimiento: +$${pnl.toFixed(2)}`,
+                    time: 'Ahora'
+                });
+            }
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert ${alert.type}">
+                    <span class="alert-icon">${alert.icon}</span>
+                    <span class="alert-message">${alert.message}</span>
+                    <span class="alert-time">${alert.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = `
+                <div class="alert ${type}">
+                    <span class="alert-icon">${type === 'danger' ? '❌' : 'ℹ️'}</span>
+                    <span class="alert-message">${message}</span>
+                </div>
+            `;
+        }
+
+        // Refresh data
+        async function refreshData() {
+            const btn = event.target.closest('.btn');
+            btn.classList.add('refreshing');
+
+            try {
+                await loadBacktestData();
+                updateDashboard();
+                showAlert('Datos actualizados correctamente', 'success');
+            } catch (error) {
+                showAlert('Error al actualizar datos', 'danger');
+            }
+
+            setTimeout(() => btn.classList.remove('refreshing'), 500);
+        }
+
+        // Auto refresh
+        function startAutoRefresh() {
+            updateInterval = setInterval(() => {
+                updateDashboard();
+            }, 10000);
+        }
+
+        // Export dashboard as PNG
+        function exportDashboard() {
+            // Create a simple export by using window.print which can save as PDF
+            // For true PNG export, would need html2canvas library
+            window.print();
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

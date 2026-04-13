@@ -1,0 +1,104 @@
+{
+  "MeanReversion": {
+    "v1": {
+      "totalTrades": 13876,
+      "winningTrades": 6944,
+      "losingTrades": 6932,
+      "winRate": 0.5004324012683771,
+      "totalPnL": 3.8609117524161025,
+      "avgPnL": 0.0002782438564727661,
+      "grossProfit": 22.899940971799698,
+      "grossLoss": 19.039029219384012,
+      "profitFactor": 1.202789318085862,
+      "maxDrawdown": 2.263242608378684,
+      "sharpeRatio": 1.194988382438589,
+      "tp1Hits": 0,
+      "tp2Hits": 0,
+      "slHits": 3553
+    },
+    "tpp": {
+      "totalTrades": 17404,
+      "winningTrades": 10277,
+      "losingTrades": 7127,
+      "winRate": 0.5904964376005516,
+      "totalPnL": null,
+      "avgPnL": null,
+      "grossProfit": null,
+      "grossLoss": null,
+      "profitFactor": null,
+      "maxDrawdown": 0.3423541325465099,
+      "sharpeRatio": null,
+      "tp1Hits": 3456,
+      "tp2Hits": 1040,
+      "slHits": 3877
+    }
+  },
+  "TurtleSoupCTR": {
+    "v1": {
+      "totalTrades": 1164,
+      "winningTrades": 652,
+      "losingTrades": 512,
+      "winRate": 0.5601374570446735,
+      "totalPnL": 2.7054528740612334,
+      "avgPnL": 0.002324272228574943,
+      "grossProfit": 4.0684938927091485,
+      "grossLoss": 1.363041018647915,
+      "profitFactor": 2.984865339375436,
+      "maxDrawdown": 0.18334255497873608,
+      "sharpeRatio": 7.339012505755502,
+      "tp1Hits": 0,
+      "tp2Hits": 0,
+      "slHits": 418
+    },
+    "tpp": {
+      "totalTrades": 1823,
+      "winningTrades": 1265,
+      "losingTrades": 558,
+      "winRate": 0.693911135490949,
+      "totalPnL": null,
+      "avgPnL": null,
+      "grossProfit": null,
+      "grossLoss": null,
+      "profitFactor": null,
+      "maxDrawdown": 0,
+      "sharpeRatio": null,
+      "tp1Hits": 652,
+      "tp2Hits": 297,
+      "slHits": 498
+    }
+  },
+  "VWAPBounce": {
+    "v1": {
+      "totalTrades": 3825,
+      "winningTrades": 1621,
+      "losingTrades": 2204,
+      "winRate": 0.42379084967320263,
+      "totalPnL": 0.7238681280266255,
+      "avgPnL": 0.00018924656941872561,
+      "grossProfit": 5.340301962231426,
+      "grossLoss": 4.616433834204784,
+      "profitFactor": 1.1568024483884614,
+      "maxDrawdown": 0.8634210556070339,
+      "sharpeRatio": 0.9362976105048886,
+      "tp1Hits": 0,
+      "tp2Hits": 0,
+      "slHits": 1640
+    },
+    "tpp": {
+      "totalTrades": 4786,
+      "winningTrades": 2530,
+      "losingTrades": 2256,
+      "winRate": 0.5286251567070622,
+      "totalPnL": null,
+      "avgPnL": null,
+      "grossProfit": null,
+      "grossLoss": null,
+      "profitFactor": null,
+      "maxDrawdown": 0,
+      "sharpeRatio": null,
+      "tp1Hits": 941,
+      "tp2Hits": 316,
+      "slHits": 1722
+    }
+  }
+}

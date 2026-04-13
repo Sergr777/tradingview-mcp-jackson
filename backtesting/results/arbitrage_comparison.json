@@ -1,0 +1,28 @@
+{
+  "arbitrageOnly": {
+    "totalTrades": 2102,
+    "winningTrades": 1691,
+    "losingTrades": 411,
+    "winRate": 0.8044719314938155,
+    "totalPnL": 12.768538146319969,
+    "avgPnL": 0.00607447104962891,
+    "grossProfit": 13.220951617038216,
+    "grossLoss": 0.4524134707182512,
+    "profitFactor": 29.2231608312826,
+    "maxDrawdown": 6.821173552088199e-7,
+    "sharpeRatio": 13.535385460044226
+  },
+  "portfolioWithArbitrage": {
+    "totalTrades": 21100,
+    "winningTrades": 12784,
+    "losingTrades": 8316,
+    "winRate": 0.6058767772511848,
+    "totalPnL": null,
+    "avgPnL": null,
+    "grossProfit": null,
+    "grossLoss": null,
+    "profitFactor": null,
+    "maxDrawdown": 1.471247152204762e-7,
+    "sharpeRatio": null
+  }
+}

@@ -19,6 +19,10 @@ const SYMBOL = "XRPUSDT"; // XRP/USDT spot — low price, above min order size
 const INTERVAL_MS = 10000; // 10 seconds
 const TOTAL_TRADES = 6;
 
+// 🔧 LOT_SIZE configuration for BitGet XRPUSDT
+const LOT_SIZE = 0.001; // BitGet minimum increment for XRP
+const MIN_NOTIONAL = 5; // Minimum order value in USDT
+
 // ── BitGet helpers ──────────────────────────────────────────────
 function sign(ts, method, path, body = "") {
   return createHmac("sha256", SECRET_KEY)
@@ -147,6 +151,47 @@ function getSignal(candles) {
 }
 
 // ── Order helpers ───────────────────────────────────────────────
+/**
+ * Adjust quantity to match BitGet LOT_SIZE requirements
+ * Prevents "12001" precision errors
+ */
+function adjustToLotSize(qty, lotSize = LOT_SIZE) {
+  const adjusted = Math.floor(qty / lotSize) * lotSize;
+  // Ensure we don't go below minimum
+  return adjusted >= lotSize ? adjusted : 0;
+}
+
+/**
+ * Validate if order meets minimum notional value
+ */
+function validateMinNotional(qty, price, minNotional = MIN_NOTIONAL) {
+  const value = qty * price;
+  return value >= minNotional;
+}
+
+/**
+ * Smart quantity adjustment with fallback strategies
+ * Tries 3 precision levels if LOT_SIZE adjustment fails
+ */
+function adjustQuantityWithFallback(originalQty, price) {
+  const strategies = [
+    // Strategy 1: Exact LOT_SIZE
+    adjustToLotSize(originalQty),
+    // Strategy 2: 3 decimals (conservative)
+    adjustToLotSize(Math.floor(originalQty * 1000) / 1000),
+    // Strategy 3: 2 decimals (emergency fallback)
+    adjustToLotSize(Math.floor(originalQty * 100) / 100),
+  ];
+
+  for (const qty of strategies) {
+    if (qty > 0 && validateMinNotional(qty, price)) {
+      return qty;
+    }
+  }
+
+  return 0; // All strategies failed
+}
+
 async function placeOrder(side, size) {
   const body = {
     symbol: SYMBOL,
@@ -172,11 +217,66 @@ async function getOrderFill(orderId) {
 }
 
 // BitGet locks newly purchased assets against immediate resale (anti-wash-trading).
-// This retries the sell, parsing the actually-available amount from the error
-// message until the lock lifts or we time out.
+// Enhanced retry system with LOT_SIZE correction and multiple fallback strategies.
+/**
+ * Pre-sale validation to prevent precision errors
+ * Returns validated quantity or 0 if validation fails
+ */
+async function validateAndPrepareSell(intendedQty) {
+  const bals = await getBalances();
+  const currentPrice = await getPrice(SYMBOL);
+
+  console.log(`\n  🔍 Pre-sale validation:`);
+  console.log(`     Balance XRP: ${bals.xrp.toFixed(6)}`);
+  console.log(`     Intended sell: ${intendedQty.toFixed(6)}`);
+  console.log(`     Current price: $${currentPrice.toFixed(4)}`);
+
+  // Check if we have enough balance
+  if (bals.xrp < LOT_SIZE) {
+    console.log(`  ❌ Balance too low: ${bals.xrp} < ${LOT_SIZE} (LOT_SIZE)`);
+    return 0;
+  }
+
+  // Check if intended qty exceeds balance
+  const actualQty = Math.min(intendedQty, bals.xrp);
+  if (actualQty < intendedQty) {
+    console.log(`  ⚠️  Reducing to available balance: ${actualQty.toFixed(6)}`);
+  }
+
+  // Adjust to LOT_SIZE
+  const adjustedQty = adjustQuantityWithFallback(actualQty, currentPrice);
+
+  if (adjustedQty === 0) {
+    console.log(`  ❌ Cannot adjust ${actualQty.toFixed(6)} to valid LOT_SIZE`);
+    console.log(`  💡 Converting dust to USDT...`);
+    // TODO: Implement dust conversion
+    return 0;
+  }
+
+  // Validate minimum notional
+  if (!validateMinNotional(adjustedQty, currentPrice)) {
+    console.log(`  ❌ Below minimum notional: $${(adjustedQty * currentPrice).toFixed(2)} < $${MIN_NOTIONAL}`);
+    return 0;
+  }
+
+  console.log(`  ✅ Validated: Selling ${adjustedQty.toFixed(6)} XRP (≈$${(adjustedQty * currentPrice).toFixed(2)})`);
+  return adjustedQty;
+}
+
 async function placeSellWithRetry(qty, maxRetries = 12, retryDelayMs = 3000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const size = (Math.floor(qty * 10000) / 10000).toFixed(4);
+    // 🔧 FIX: Use smart quantity adjustment with fallback strategies
+    const currentPrice = await getPrice(SYMBOL);
+    const adjustedQty = adjustQuantityWithFallback(qty, currentPrice);
+
+    if (adjustedQty === 0) {
+      console.log(`  ❌ Cannot adjust ${qty} XRP to valid LOT_SIZE`);
+      return { ok: false, res: { msg: "Invalid quantity after LOT_SIZE adjustment" }, soldQty: 0 };
+    }
+
+    const size = adjustedQty.toFixed(4);
+    console.log(`  📏 Attempt ${attempt}/${maxRetries}: Selling ${size} XRP (original: ${qty.toFixed(4)})`);
+
     const res = await placeOrder("sell", size);
 
     if (res.code === "00000")
@@ -189,13 +289,18 @@ async function placeSellWithRetry(qty, maxRetries = 12, retryDelayMs = 3000) {
       console.log(
         `  🔒 Lock active — only ${available} XRP tradeable. Retry ${attempt}/${maxRetries} in ${retryDelayMs / 1000}s...`,
       );
+
+      // 🔧 FIX: Update qty to available amount for next retry
+      qty = available;
       await new Promise((r) => setTimeout(r, retryDelayMs));
       continue;
     }
 
     // Any other error — don't retry
+    console.log(`  ❌ Non-recoverable error: ${res.msg}`);
     return { ok: false, res, soldQty: 0 };
   }
+
   return {
     ok: false,
     res: { msg: "Sell lock never lifted after retries" },
@@ -287,8 +392,21 @@ async function main() {
         holding = "usdt";
       }
     } else {
+      // 🔧 FIX: Pre-sale validation before attempting sell
+      const validatedQty = await validateAndPrepareSell(lastBuyXrpQty);
+
+      if (validatedQty === 0) {
+        console.log(`  ❌ Cannot sell — validation failed`);
+        entry.orderPlaced = false;
+        entry.skipReason = "Pre-sale validation failed";
+        log.push(entry);
+        if (i < TOTAL_TRADES)
+          await new Promise((r) => setTimeout(r, INTERVAL_MS));
+        continue;
+      }
+
       // Use retry loop — handles BitGet's anti-wash-trading lock automatically
-      const { ok, res, soldQty } = await placeSellWithRetry(lastBuyXrpQty);
+      const { ok, res, soldQty } = await placeSellWithRetry(validatedQty);
       entry.orderId = res.data?.orderId || res.msg;
       entry.orderPlaced = ok;
 

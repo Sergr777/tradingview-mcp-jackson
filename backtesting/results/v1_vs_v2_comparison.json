@@ -1,0 +1,92 @@
+{
+  "MeanReversion": {
+    "v1": {
+      "systemName": "MeanReversion_V1",
+      "totalTrades": 13876,
+      "winningTrades": 6944,
+      "losingTrades": 6932,
+      "winRate": 0.5004324012683771,
+      "totalPnL": 3.8609117524161025,
+      "avgPnL": 0.0002782438564727661,
+      "grossProfit": 22.899940971799698,
+      "grossLoss": 19.039029219384012,
+      "profitFactor": 1.202789318085862,
+      "maxDrawdown": 2.263242608378684,
+      "sharpeRatio": 1.194988382438589
+    },
+    "v2": {
+      "systemName": "MeanReversion_V2",
+      "totalTrades": 14041,
+      "winningTrades": 7341,
+      "losingTrades": 6700,
+      "winRate": 0.5228260095434798,
+      "totalPnL": 3.5540579283811904,
+      "avgPnL": 0.0002531200005969084,
+      "grossProfit": 18.850835076388908,
+      "grossLoss": 15.296777148007179,
+      "profitFactor": 1.232340308941792,
+      "maxDrawdown": 3.592939105320912,
+      "sharpeRatio": 1.2879268838422815
+    }
+  },
+  "TurtleSoupCTR": {
+    "v1": {
+      "systemName": "TurtleSoupCTR_V1",
+      "totalTrades": 1164,
+      "winningTrades": 652,
+      "losingTrades": 512,
+      "winRate": 0.5601374570446735,
+      "totalPnL": 2.7054528740612334,
+      "avgPnL": 0.002324272228574943,
+      "grossProfit": 4.0684938927091485,
+      "grossLoss": 1.363041018647915,
+      "profitFactor": 2.984865339375436,
+      "maxDrawdown": 0.18334255497873608,
+      "sharpeRatio": 7.339012505755502
+    },
+    "v2": {
+      "systemName": "TurtleSoupCTR_V2",
+      "totalTrades": 957,
+      "winningTrades": 556,
+      "losingTrades": 401,
+      "winRate": 0.58098223615465,
+      "totalPnL": 2.154846448203862,
+      "avgPnL": 0.0022516681799413397,
+      "grossProfit": 3.319053704697892,
+      "grossLoss": 1.164207256494033,
+      "profitFactor": 2.850913088012438,
+      "maxDrawdown": 0.25205442507357967,
+      "sharpeRatio": 6.884841397889513
+    }
+  },
+  "VWAPBounce": {
+    "v1": {
+      "systemName": "VWAPBounce_V1",
+      "totalTrades": 3825,
+      "winningTrades": 1621,
+      "losingTrades": 2204,
+      "winRate": 0.42379084967320263,
+      "totalPnL": 0.7238681280266255,
+      "avgPnL": 0.00018924656941872561,
+      "grossProfit": 5.340301962231426,
+      "grossLoss": 4.616433834204784,
+      "profitFactor": 1.1568024483884614,
+      "maxDrawdown": 0.8634210556070339,
+      "sharpeRatio": 0.9362976105048886
+    },
+    "v2": {
+      "systemName": "VWAPBounce_V2",
+      "totalTrades": 2375,
+      "winningTrades": 1016,
+      "losingTrades": 1359,
+      "winRate": 0.42778947368421055,
+      "totalPnL": 0.3107205354218743,
+      "avgPnL": 0.0001308296991249997,
+      "grossProfit": 3.052488939575045,
+      "grossLoss": 2.7417684041531696,
+      "profitFactor": 1.1133285127041377,
+      "maxDrawdown": 0.7547974497453459,
+      "sharpeRatio": 0.6808000124508373
+    }
+  }
+}
