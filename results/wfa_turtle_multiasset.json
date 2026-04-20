@@ -1,0 +1,178 @@
+{
+  "system": "Turtle Soup Multi-Asset (BTC+ETH+SOL 1h NY)",
+  "fecha": "2026-04-20T16:52:21.373Z",
+  "windows": [
+    {
+      "id": "W1",
+      "trainStart": "2022-01-01",
+      "trainEnd": "2023-01-01",
+      "testEnd": "2024-01-01"
+    },
+    {
+      "id": "W2",
+      "trainStart": "2023-01-01",
+      "trainEnd": "2024-01-01",
+      "testEnd": "2025-01-01"
+    },
+    {
+      "id": "W3",
+      "trainStart": "2024-01-01",
+      "trainEnd": "2025-01-01",
+      "testEnd": "2026-01-01"
+    },
+    {
+      "id": "W4",
+      "trainStart": "2025-01-01",
+      "trainEnd": "2026-01-01",
+      "testEnd": "2026-04-17"
+    }
+  ],
+  "results": [
+    {
+      "window": {
+        "id": "W1",
+        "trainStart": "2022-01-01",
+        "trainEnd": "2023-01-01",
+        "testEnd": "2024-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "minWickPct": 0.007,
+        "requireConfirm": false,
+        "slPct": 0.012,
+        "tpMultiplier": 2
+      },
+      "inSample": {
+        "trades": 144,
+        "winRate": 56.25,
+        "pf": 2.19,
+        "sharpe": 5.027,
+        "maxDD": 116.65,
+        "totalPnl": 0.6206,
+        "avgTrade": 0.0043
+      },
+      "outSample": {
+        "trades": 88,
+        "winRate": 44.32,
+        "pf": 0.91,
+        "sharpe": -0.556,
+        "maxDD": 425.59,
+        "totalPnl": -0.0435,
+        "avgTrade": -0.0005
+      },
+      "wfRatio": 0.7879111111111111,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W2",
+        "trainStart": "2023-01-01",
+        "trainEnd": "2024-01-01",
+        "testEnd": "2025-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "minWickPct": 0.002,
+        "requireConfirm": false,
+        "slPct": 0.012,
+        "tpMultiplier": 1.5
+      },
+      "inSample": {
+        "trades": 231,
+        "winRate": 48.48,
+        "pf": 0.887,
+        "sharpe": -0.692,
+        "maxDD": 578.58,
+        "totalPnl": -0.1073,
+        "avgTrade": -0.0005
+      },
+      "outSample": {
+        "trades": 248,
+        "winRate": 50.81,
+        "pf": 1.171,
+        "sharpe": 1.121,
+        "maxDD": 5158.35,
+        "totalPnl": 0.1846,
+        "avgTrade": 0.0007
+      },
+      "wfRatio": 1.0480610561056107,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W3",
+        "trainStart": "2024-01-01",
+        "trainEnd": "2025-01-01",
+        "testEnd": "2026-01-01"
+      },
+      "status": "APPROVED",
+      "bestParams": {
+        "minWickPct": 0.002,
+        "requireConfirm": false,
+        "slPct": 0.012,
+        "tpMultiplier": 1.5
+      },
+      "inSample": {
+        "trades": 248,
+        "winRate": 50.81,
+        "pf": 1.171,
+        "sharpe": 1.121,
+        "maxDD": 5158.35,
+        "totalPnl": 0.1846,
+        "avgTrade": 0.0007
+      },
+      "outSample": {
+        "trades": 249,
+        "winRate": 56.22,
+        "pf": 1.67,
+        "sharpe": 3.858,
+        "maxDD": 751.43,
+        "totalPnl": 0.5824,
+        "avgTrade": 0.0023
+      },
+      "wfRatio": 1.1064751033261169,
+      "approved": true
+    },
+    {
+      "window": {
+        "id": "W4",
+        "trainStart": "2025-01-01",
+        "trainEnd": "2026-01-01",
+        "testEnd": "2026-04-17"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "minWickPct": 0.007,
+        "requireConfirm": false,
+        "slPct": 0.012,
+        "tpMultiplier": 1.5
+      },
+      "inSample": {
+        "trades": 106,
+        "winRate": 54.72,
+        "pf": 1.606,
+        "sharpe": 3.429,
+        "maxDD": 94.9,
+        "totalPnl": 0.2813,
+        "avgTrade": 0.0027
+      },
+      "outSample": {
+        "trades": 36,
+        "winRate": 47.22,
+        "pf": 1.313,
+        "sharpe": 1.74,
+        "maxDD": 56.43,
+        "totalPnl": 0.0559,
+        "avgTrade": 0.0016
+      },
+      "wfRatio": 0.8629385964912281,
+      "approved": false
+    }
+  ],
+  "summary": {
+    "avgInSampleWR": 52.565,
+    "avgOutSampleWR": 49.6425,
+    "approvedWindows": 1,
+    "totalWindows": 4
+  }
+}

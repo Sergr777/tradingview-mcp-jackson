@@ -1,0 +1,102 @@
+{
+  "run_date": "2026-04-20T19:01:57.206825",
+  "config": {
+    "score_threshold": 0.55,
+    "sl_atr": 1.0,
+    "tp_atr": 2.0,
+    "cost": 0.001
+  },
+  "results": {
+    "BTC": {
+      "window_results": [
+        {
+          "window": "W1",
+          "train": 1477,
+          "test": 586,
+          "n_scored": 210,
+          "auc": 0.709,
+          "trades": 210,
+          "wr": 74.29,
+          "pf": 2.874,
+          "avg_trade": 0.3035,
+          "total_pnl": 63.74,
+          "cagr": 13.12,
+          "maxDD": 2.6,
+          "sharpe": 8.95,
+          "sortino": 10.832,
+          "calmar": 5.047,
+          "kelly_half": 24.2
+        },
+        {
+          "window": "W2",
+          "train": 586,
+          "test": 1065,
+          "n_scored": 342,
+          "auc": 0.7,
+          "trades": 342,
+          "wr": 72.81,
+          "pf": 3.503,
+          "avg_trade": 0.4083,
+          "total_pnl": 139.65,
+          "cagr": 24.42,
+          "maxDD": 3.54,
+          "sharpe": 8.698,
+          "sortino": 16.865,
+          "calmar": 6.903,
+          "kelly_half": 26.0
+        },
+        {
+          "window": "W3",
+          "train": 1065,
+          "test": 783,
+          "n_scored": 300,
+          "auc": 0.712,
+          "trades": 300,
+          "wr": 72.0,
+          "pf": 2.8,
+          "avg_trade": 0.374,
+          "total_pnl": 112.19,
+          "cagr": 20.69,
+          "maxDD": 4.68,
+          "sharpe": 9.96,
+          "sortino": 12.276,
+          "calmar": 4.419,
+          "kelly_half": 23.1
+        },
+        {
+          "window": "W4",
+          "train": 783,
+          "test": 327,
+          "n_scored": 117,
+          "auc": 0.664,
+          "trades": 117,
+          "wr": 74.36,
+          "pf": 3.708,
+          "avg_trade": 0.4736,
+          "total_pnl": 55.42,
+          "cagr": 11.65,
+          "maxDD": 3.14,
+          "sharpe": 10.966,
+          "sortino": 20.294,
+          "calmar": 3.706,
+          "kelly_half": 27.2
+        }
+      ],
+      "metrics": {
+        "label": "BTC",
+        "trades": 969,
+        "wr": 73.07,
+        "pf": 3.15,
+        "avg_trade": 0.3829,
+        "total_pnl": 370.99,
+        "cagr": 47.32,
+        "maxDD": 4.68,
+        "sharpe": 9.16,
+        "sortino": 14.368,
+        "calmar": 10.105,
+        "kelly_half": 24.9
+      }
+    }
+  },
+  "total_portfolio_trades": 969
+}

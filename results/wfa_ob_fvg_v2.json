@@ -1,0 +1,186 @@
+{
+  "system": "OB+FVG v2 (Señal Invertida)",
+  "fecha": "2026-04-20T16:46:01.118Z",
+  "windows": [
+    {
+      "id": "W1",
+      "trainStart": "2022-01-01",
+      "trainEnd": "2023-01-01",
+      "testEnd": "2024-01-01"
+    },
+    {
+      "id": "W2",
+      "trainStart": "2023-01-01",
+      "trainEnd": "2024-01-01",
+      "testEnd": "2025-01-01"
+    },
+    {
+      "id": "W3",
+      "trainStart": "2024-01-01",
+      "trainEnd": "2025-01-01",
+      "testEnd": "2026-01-01"
+    },
+    {
+      "id": "W4",
+      "trainStart": "2025-01-01",
+      "trainEnd": "2026-01-01",
+      "testEnd": "2026-04-17"
+    }
+  ],
+  "results": [
+    {
+      "window": {
+        "id": "W1",
+        "trainStart": "2022-01-01",
+        "trainEnd": "2023-01-01",
+        "testEnd": "2024-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "invertSignal": false,
+        "requireClose": false,
+        "trendFilter1h": false,
+        "useOB": true,
+        "useFVG": true,
+        "atrTp": 2
+      },
+      "inSample": {
+        "trades": 1690,
+        "winRate": 37.87,
+        "pf": 0.815,
+        "sharpe": -2.949,
+        "maxDD": 10769.08,
+        "totalPnl": -1.0168,
+        "avgTrade": -0.0006
+      },
+      "outSample": {
+        "trades": 1851,
+        "winRate": 36.14,
+        "pf": 0.642,
+        "sharpe": -6.271,
+        "maxDD": 89301.78,
+        "totalPnl": -1.3598,
+        "avgTrade": -0.0007
+      },
+      "wfRatio": 0.9543174016371799,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W2",
+        "trainStart": "2023-01-01",
+        "trainEnd": "2024-01-01",
+        "testEnd": "2025-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "invertSignal": false,
+        "requireClose": false,
+        "trendFilter1h": false,
+        "useOB": true,
+        "useFVG": true,
+        "atrTp": 2
+      },
+      "inSample": {
+        "trades": 1851,
+        "winRate": 36.14,
+        "pf": 0.642,
+        "sharpe": -6.271,
+        "maxDD": 89301.78,
+        "totalPnl": -1.3598,
+        "avgTrade": -0.0007
+      },
+      "outSample": {
+        "trades": 1955,
+        "winRate": 39.18,
+        "pf": 0.83,
+        "sharpe": -2.757,
+        "maxDD": 8056.37,
+        "totalPnl": -0.8794,
+        "avgTrade": -0.0004
+      },
+      "wfRatio": 1.0841173215273934,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W3",
+        "trainStart": "2024-01-01",
+        "trainEnd": "2025-01-01",
+        "testEnd": "2026-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "invertSignal": false,
+        "requireClose": false,
+        "trendFilter1h": false,
+        "useOB": true,
+        "useFVG": true,
+        "atrTp": 2
+      },
+      "inSample": {
+        "trades": 1955,
+        "winRate": 39.18,
+        "pf": 0.83,
+        "sharpe": -2.757,
+        "maxDD": 8056.37,
+        "totalPnl": -0.8794,
+        "avgTrade": -0.0004
+      },
+      "outSample": {
+        "trades": 2034,
+        "winRate": 37.27,
+        "pf": 0.688,
+        "sharpe": -5.685,
+        "maxDD": 2610.15,
+        "totalPnl": -1.4576,
+        "avgTrade": -0.0007
+      },
+      "wfRatio": 0.9512506380806535,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W4",
+        "trainStart": "2025-01-01",
+        "trainEnd": "2026-01-01",
+        "testEnd": "2026-04-17"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "invertSignal": false,
+        "requireClose": false,
+        "trendFilter1h": false,
+        "useOB": true,
+        "useFVG": true,
+        "atrTp": 2
+      },
+      "inSample": {
+        "trades": 2034,
+        "winRate": 37.27,
+        "pf": 0.688,
+        "sharpe": -5.685,
+        "maxDD": 2610.15,
+        "totalPnl": -1.4576,
+        "avgTrade": -0.0007
+      },
+      "outSample": {
+        "trades": 581,
+        "winRate": 38.55,
+        "pf": 0.793,
+        "sharpe": -3.572,
+        "maxDD": 4583.08,
+        "totalPnl": -0.3119,
+        "avgTrade": -0.0005
+      },
+      "wfRatio": 1.034343976388516,
+      "approved": false
+    }
+  ],
+  "summary": {
+    "avgInSampleWR": 37.615,
+    "avgOutSampleWR": 37.785,
+    "approvedWindows": 0,
+    "totalWindows": 4
+  }
+}
