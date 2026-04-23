@@ -1,6 +1,19 @@
 """
-lgbm_ob_trading_system.py
+lgbm_ob_trading_system_fase1_fase2.py
 Sistema de Trading Completo basado en LightGBM OB Scorer
+
+REVERTIDO A BASELINE (2026-04-23):
+  Las optimizaciones de Fase 1-2 (20 features, dynamic threshold)
+  fueron REVERTIDAS tras backtesting OOS porque DEGRADARON
+  el sistema: WR 73.07%→68.97%, PF 3.15→2.742, Sharpe 9.16→8.035.
+
+  Este archivo ahora usa la configuración BASELINE probada:
+  - 15 features originales
+  - Threshold fijo 0.55 (sin ajuste dinámico por régimen)
+  - Sin features que requieren datos L2
+  - Sin ensemble
+
+  Lección: "Simplicity wins". El modelo base ya era óptimo.
 
 Pipeline:
   1. Detectar Order Blocks (BULL y BEAR)
@@ -74,7 +87,7 @@ SL_ATR_MULT  = 1.0   # SL a 1×ATR
 TP_ATR_MULT  = 2.0   # TP a 2×ATR (RR 2:1)
 MAX_HOLD     = 96
 COST         = 0.001  # comisión
-SCORE_THRESH = 0.55   # umbral del scorer
+SCORE_THRESH = 0.55   # umbral del scorer (FIJO — sin dynamic threshold)
 
 FEAT_COLS = [
     'impulse_pct', 'ob_vol_ratio', 'zone_size_pct',
@@ -364,7 +377,7 @@ def calibrate_threshold(ob_df: pd.DataFrame, thresholds: list = [0.55, 0.60, 0.6
     X_train, y_train = train[FEAT_COLS], train['label']
 
     model = lgb.LGBMClassifier(**LGB_PARAMS, n_estimators=N_ESTIMATORS)
-    model.fit(X_train, y_train, verbose=-1)
+    model.fit(X_train, y_train)
 
     proba = model.predict_proba(X_train[FEAT_COLS])[:, 1]
 
@@ -411,7 +424,7 @@ def calibrate_threshold(ob_df: pd.DataFrame, thresholds: list = [0.55, 0.60, 0.6
     if results:
         optimal = max(results, key=lambda r: r['sharpe'] * np.log(r['trades'] + 1))
         print(f'\n  Threshold óptimo recomendado: {optimal["threshold"]:.2f}')
-        print(f'    → Sharpe {optimal["sharpe"]:.2f}, {optimal["trades"]} trades, WR {optimal["wr"]:.1f}%')
+        print(f'    -> Sharpe {optimal["sharpe"]:.2f}, {optimal["trades"]} trades, WR {optimal["wr"]:.1f}%')
 
     return results
 
@@ -453,7 +466,7 @@ def run_wfa(ob_df: pd.DataFrame, asset: str) -> tuple[list, list]:
         except Exception:
             auc = 0.5
 
-        # Simular trades OOS
+        # Simular trades OOS (threshold FIJO 0.55 — baseline)
         trades = simulate_trades(test, proba, SCORE_THRESH)
         for t in trades:
             t['asset']  = asset
@@ -504,9 +517,11 @@ def print_metrics(m: dict):
 def main():
     print('\nLightGBM OB Trading System')
     print('='*65)
-    print(f'  Score threshold : {SCORE_THRESH}')
+    print(f'  Score threshold : {SCORE_THRESH} (FIJO — baseline)')
     print(f'  R:R             : {SL_ATR_MULT}x SL | {TP_ATR_MULT}x TP')
     print(f'  Costo por trade : {COST*100}%')
+    print('  Features        : 15 originales (baseline)')
+    print('  NOTA            : Fase 1-2 REVERTIDA — ver documentación')
 
     # Cargar activos disponibles
     loaded_assets = []

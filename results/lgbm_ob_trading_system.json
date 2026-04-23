@@ -1,5 +1,5 @@
 {
-  "run_date": "2026-04-20T19:01:57.206825",
+  "run_date": "2026-04-23T19:22:36.092793",
   "config": {
     "score_threshold": 0.55,
     "sl_atr": 1.0,
@@ -96,7 +96,93 @@
         "calmar": 10.105,
         "kelly_half": 24.9
       }
+    },
+    "ETH": {
+      "window_results": [
+        {
+          "window": "W4",
+          "train": 1833,
+          "test": 477,
+          "n_scored": 162,
+          "auc": 0.646,
+          "trades": 162,
+          "wr": 70.37,
+          "pf": 2.73,
+          "avg_trade": 0.457,
+          "total_pnl": 74.04,
+          "cagr": 14.86,
+          "maxDD": 4.22,
+          "sharpe": 9.545,
+          "sortino": 13.684,
+          "calmar": 3.524,
+          "kelly_half": 22.3
+        }
+      ],
+      "metrics": {
+        "label": "ETH",
+        "trades": 162,
+        "wr": 70.37,
+        "pf": 2.73,
+        "avg_trade": 0.457,
+        "total_pnl": 74.04,
+        "cagr": 14.86,
+        "maxDD": 4.22,
+        "sharpe": 9.545,
+        "sortino": 13.684,
+        "calmar": 3.524,
+        "kelly_half": 22.3
+      }
+    },
+    "SOL": {
+      "window_results": [
+        {
+          "window": "W4",
+          "train": 2484,
+          "test": 545,
+          "n_scored": 167,
+          "auc": 0.657,
+          "trades": 167,
+          "wr": 70.06,
+          "pf": 2.492,
+          "avg_trade": 0.4206,
+          "total_pnl": 70.24,
+          "cagr": 14.23,
+          "maxDD": 17.5,
+          "sharpe": 9.323,
+          "sortino": 7.64,
+          "calmar": 0.813,
+          "kelly_half": 21.0
+        }
+      ],
+      "metrics": {
+        "label": "SOL",
+        "trades": 167,
+        "wr": 70.06,
+        "pf": 2.492,
+        "avg_trade": 0.4206,
+        "total_pnl": 70.24,
+        "cagr": 14.23,
+        "maxDD": 17.5,
+        "sharpe": 9.323,
+        "sortino": 7.64,
+        "calmar": 0.813,
+        "kelly_half": 21.0
+      }
+    },
+    "portfolio": {
+      "label": "Portfolio",
+      "trades": 1298,
+      "wr": 72.34,
+      "pf": 2.963,
+      "avg_trade": 0.397,
+      "total_pnl": 515.27,
+      "cagr": 57.49,
+      "maxDD": 12.28,
+      "sharpe": 8.251,
+      "sortino": 13.785,
+      "calmar": 4.684,
+      "kelly_half": 24.0
     }
   },
-  "total_portfolio_trades": 969
+  "total_portfolio_trades": 1298
 }

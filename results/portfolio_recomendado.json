@@ -1,0 +1,52 @@
+{
+  "fecha": "2026-04-23T23:36:05.223Z",
+  "nota": "Portfolio sin Arbitrage v4. Fase 1 REVERTIDA. Quarter-Kelly sizing.",
+  "params": {
+    "turtle": {
+      "session": "both",
+      "minWickPct": 0.003,
+      "bufferBars": 0,
+      "nyBiasFilter": true,
+      "slPct": 0.01,
+      "tpPct": 0.012
+    },
+    "allocation": {
+      "turtle": 0.3,
+      "ob": 0.6
+    }
+  },
+  "turtle": {
+    "trades": 816,
+    "wr": 0.5330882352941176,
+    "pf": 1.1440406917111299,
+    "total": 0.4655878225287725,
+    "maxDD": 0.1544716867969424,
+    "sharpe": 1.132495942555939,
+    "calmar": 0.6491762433639199,
+    "kelly": 0.06711859002146287
+  },
+  "ob": {
+    "trades": 969,
+    "wr": 0.7306999999999999,
+    "pf": 3.15,
+    "total": 3.7099,
+    "maxDD": 0.046799999999999994,
+    "sharpe": 9.16,
+    "calmar": 10.105,
+    "kelly": 0.249
+  },
+  "portfolio": {
+    "trades": 1785,
+    "wr": 0.6403631932773108,
+    "pf": null,
+    "total": null,
+    "maxDD": 0.0541850678874756,
+    "sharpe": 6.484000000000001,
+    "calmar": null
+  },
+  "correlation": -0.022,
+  "sizing": {
+    "turtleQuarterKelly": 1.7,
+    "obQuarterKelly": 6.2
+  }
+}
