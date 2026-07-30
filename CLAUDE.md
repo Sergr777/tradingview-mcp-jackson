@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Components
 
-1. **TradingView MCP Server** (`src/`) - 68 MCP tools for reading and controlling TradingView Desktop via CDP
+1. **TradingView MCP Server** (`src/`) - 78 MCP tools for reading and controlling TradingView Desktop via CDP
 2. **Trading Execution Scripts** (`scalper-run.js`, monitor scripts) - Live trading via BitGet API
 3. **Multi-Agent System** - AI agents (KRONOS, PROPHET, SENTIMENT, MNEMO, ORÁCULO) for intelligent trading decisions
 4. **Strategy Development** - Specialist/general trading systems, backtesting, optimization
@@ -137,11 +137,21 @@ src/
 
 ### Trading Scripts
 
-- **`scalper-run.js`** - 10-second momentum scalper executing XRP/USDT spot trades on BitGet
-- **`monitor_turtle_soup.cjs`** - Turtle Soup pattern monitoring
-- **`monitor_turtle_soup_real.cjs`** - Real-time Turtle Soup monitoring with TradingView integration
-- **`data_collector.js`** - Data collection for analysis
-- **`analyze_two_weeks.js`** / **`analyze_week1.js`** - Analysis scripts
+- **`scalper-run.js`** - 10-second momentum scalper executing XRP/USDT spot trades on BitGet. Reads `.env` for credentials; appends decisions to `safety-check-log.json` (used to detect position locks on retry errors)
+- **`monitor_turtle_soup.cjs`** / **`monitor_turtle_soup_real.cjs`** - Turtle Soup pattern monitoring (simulated / real-time with TradingView)
+- **`data_collector.js`** - Collects OHLCV data from BitGet for offline analysis
+- **`analyze_two_weeks.js`** / **`analyze_week1.js`** - Trade result analysis scripts
+
+### Backtesting & Optimization
+
+**`backtesting/`** (~53 scripts) — standalone `.js` backtests using locally cached OHLCV data (stored in `data/`). Key patterns:
+- Files named `backtest_<strategy>_<variant>.js` (e.g. `backtest_momentum_mtf_tp1_tp2_v2.js`)
+- Use `backtesting/backtest_utils.js` for shared helpers (trade simulation, stats)
+- Results written to `backtesting/results/` as JSON
+
+**`optimization/`** — parameter sweep scripts; `performance-analyst.md` documents findings.
+
+**`docs/`** — strategy analysis documents organized under `docs/proyecto_portafolio/` for portfolio architecture decisions and `docs/` root for backtest summaries.
 
 ### Multi-Agent System
 
@@ -311,17 +321,6 @@ These tools can return large payloads. Follow these rules to avoid context bloat
 - Screenshots save to `screenshots/` directory with timestamps
 - OHLCV capped at 500 bars, trades at 20 per request
 - Pine labels capped at 50 per study by default (pass `max_labels` to override)
-
-## Important Behavioral Rules
-
-**Core principles:**
-- Do what has been asked; nothing more, nothing less
-- NEVER create files unless absolutely necessary
-- ALWAYS prefer editing existing files over creating new ones
-- NEVER proactively create documentation unless explicitly requested
-- ALWAYS read a file before editing it
-- NEVER commit secrets, credentials, or .env files
-- NEVER hardcode API keys or sensitive data
 
 ## Trading Scripts Architecture
 

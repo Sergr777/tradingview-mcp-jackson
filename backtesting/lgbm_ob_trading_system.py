@@ -364,7 +364,7 @@ def calibrate_threshold(ob_df: pd.DataFrame, thresholds: list = [0.55, 0.60, 0.6
     X_train, y_train = train[FEAT_COLS], train['label']
 
     model = lgb.LGBMClassifier(**LGB_PARAMS, n_estimators=N_ESTIMATORS)
-    model.fit(X_train, y_train, verbose=-1)
+    model.fit(X_train, y_train)
 
     proba = model.predict_proba(X_train[FEAT_COLS])[:, 1]
 
@@ -574,8 +574,11 @@ def main():
         ob_df = build_ob_dataset(df, detect_obs(df)).dropna()
         if len(ob_df) < 200:
             continue
-        thresh_results = calibrate_threshold(ob_df, [0.55, 0.60, 0.65], symbol)
-        all_threshold_results[symbol] = thresh_results
+        try:
+            thresh_results = calibrate_threshold(ob_df, [0.55, 0.60, 0.65], symbol)
+            all_threshold_results[symbol] = thresh_results
+        except Exception as e:
+            print(f'  [WARNING] Calibración fallo para {symbol}: {e}')
 
     # ─── COMPARATIVA FINAL ───────────────────────────────────────────────────
     print(f'\n{"="*65}')
