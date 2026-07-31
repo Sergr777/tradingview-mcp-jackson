@@ -50,7 +50,7 @@ DATA_DIR = os.path.join(PROJECT_ROOT, "data", "etf")
 # Configuracion estrategica
 CONFIG_ETF = {
     "name": "ETF_PAIRS_ARBITRAJE",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "timeframe": "1d",
 
     # Pares cointegrados validados por screening
@@ -542,6 +542,8 @@ def main():
         print("  python -m models.etf_pairs_arbitraje --backtest --save")
         print("  python -m models.etf_pairs_arbitraje --backtest --save "
               "--entry 1.5 --z-window 40 --label optA")
+        print("  python -m models.etf_pairs_arbitraje --backtest --save "
+              "--retest-coint --coint-p 0.10 --coint-lookback 250 --label optC")
         return
 
     config = dict(CONFIG_ETF)
