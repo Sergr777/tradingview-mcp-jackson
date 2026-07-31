@@ -180,12 +180,17 @@ def calcular_adx_universo(high: pd.DataFrame, low: pd.DataFrame,
 # BACKTEST TSMOM
 # =============================================================================
 
-def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False) -> dict:
+def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False,
+                             include_daily: bool = False) -> dict:
     """
     Backtest TSMOM con vol targeting. TSMOM es OOS por construccion:
     la senal de cada rebalance usa SOLO datos hasta esa fecha (retorno
     trailing y volatilidad realizada) - no hay parametros ajustados
     in-sample, por lo que la curva completa es out-of-sample.
+
+    include_daily: si True, anade al resultado la serie diaria de retornos
+    netos (ret_diario) para mediciones de portafolio. Aditivo, no cambia
+    el comportamiento default.
     """
     if config is None:
         config = CONFIG_TSMOM
@@ -353,6 +358,12 @@ def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False) -> dict:
         "es_aprobado": es_aprobado,
         "tiempo_seg": round(time.time() - inicio, 1),
     }
+
+    if include_daily:
+        resultado["ret_diario"] = {
+            "fechas": [d.strftime("%Y-%m-%d") for d in ret_neto.index],
+            "retornos": [round(float(v), 6) for v in ret_neto],
+        }
 
     _imprimir_resultado(resultado, quiet=quiet)
     return resultado

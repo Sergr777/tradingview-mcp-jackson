@@ -329,13 +329,49 @@ artefacto corregible con un gate de régimen simple.
 
 Resultados guardados en `backtesting/results/comparativa_tsmom_opcion_b.json`.
 
+### Valor de portafolio medido: TSMOM 24m como sleeve — 2026-07-31 (hallazgo clave)
+
+Se midió el valor real de combinar el TSMOM 24m (pendiente, NO apto standalone)
+con el RSI(2) SPY **validado**, sobre fechas comunes (2016-02 → 2026-07, 2638
+sesiones; curvas diarias netas con costos, warmup del TSMOM recortado):
+
+| Sistema (periodo común) | Ret% | CAGR% | Vol% | Sharpe | MaxDD% | Vent+ |
+|-------------------------|-----:|------:|-----:|:------:|:------:|:-----:|
+| RSI(2) SPY solo | +1.44 | 0.14 | 0.25 | 0.548 | -0.68 | 28/43 |
+| TSMOM 24m solo | +57.92 | 4.46 | 5.72 | 0.792 | -8.06 | 29/43 |
+| **Portafolio w=0.2 TSMOM** | **+11.13** | **1.01** | **1.21** | **0.839** | **-1.87** | **30/43** |
+
+**Correlación de retornos:** diaria 0.26 / **mensual 0.27** (la diaria es
+trivialmente baja porque el RSI2 está en cash ~95% de los días, 5.7 trades/año;
+la mensual es la interpretación honesta).
+
+**Conclusiones:**
+1. **TSMOM SÍ aporta valor real como sleeve**: el portafolio w=0.2 TSMOM eleva
+   el Sharpe del RSI2 solo de 0.548 a 0.839 (delta **+0.29**) y sube la
+   estabilidad trimestral a 30/43 (vs 28/43), con un MaxDD modesto (-1.87%).
+   La diversificación es real (corr mensual 0.27, no trivial).
+2. **El RSI2 solo es muy conservador** (vol 0.25% anual, capital casi siempre en
+   cash) — su Sharpe 0.548 mejora sustancialmente al añadir un 20% de TSMOM.
+   Pesos mayores (w≥0.5) elevan retorno pero bajan el Sharpe (0.80) y suben el
+   MaxDD — el óptimo por riesgo/retorno está en w≈0.2-0.3.
+3. Las métricas standalone del RSI2 en esta tabla son sobre la **ventana común**
+   (2016-2026), no el periodo completo validado (2014-2026, Sharpe 0.586) — la
+   comparación justa requiere la misma ventana.
+4. **Este es el uso recomendado de TSMOM**: como sleeve de baja correlación junto
+   al RSI(2) SPY (w≈20%), no como señal standalone del pipeline. El modelo sigue
+   **pendiente** (NO apto solo), pero su valor de portafolio queda **demostrado
+   con evidencia**.
+
+Resultados guardados en `backtesting/results/portafolio_rsi2_tsmom.json`.
+Medidor: `backtesting/medir_valor_portafolio_rsi2_tsmom.py`.
+
 ### Próximo paso (cuando se retome)
-Opción C: combinar con el ETF pairs descartado para comparar perfiles. Queda
-como camino el valor de **portafolio**: el TSMOM 24m (edge real OOS 0.897, con
-correlación de *estrategia* baja vs RSI(2) SPY) aporta como sleeve de baja
-correlación, no como señal del pipeline. Las Opciones A y B quedaron **descartadas
-con evidencia**; el edge 24m está confirmado como real pero insuficiente para
-aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
+Opción C: combinar con el ETF pairs descartado para comparar perfiles. El TSMOM
+24m tiene su valor real **demostrado como sleeve** (w≈20% sobre RSI2 SPY: Sharpe
+0.839, corr mensual 0.27) — la implementación operativa de ese portafolio (paper
+trading del combo RSI2+TSMOM) es el siguiente paso natural. Las Opciones A y B
+quedaron **descartadas con evidencia**; el edge 24m está confirmado como real pero
+insuficiente para aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
 
 ---
 
@@ -358,9 +394,11 @@ aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
   solo con train 2014-2020, sobrevive en test 2021-2026 con Sharpe 0.897
   (+24.27%, MaxDD -6.65%). **Opción B (filtro ADX) ejecutada y descartada con
   evidencia:** empeora todas las configs y no sube la estabilidad trimestral
-  (mejor filtro 54.9% vs 56.9% baseline; OOS 0.837 vs 0.897). El modelo sigue
-  **pendiente**; el valor real de TSMOM es como **sleeve de baja correlación**
-  junto al RSI(2) SPY, no como señal standalone del pipeline.
+  (mejor filtro 54.9% vs 56.9% baseline; OOS 0.837 vs 0.897). **Valor de
+  portafolio demostrado:** como sleeve al 20% sobre el RSI(2) SPY validado sube
+  el Sharpe de 0.548 a 0.839 (corr mensual 0.27) — es su uso recomendado. El
+  modelo sigue **pendiente** (NO apto solo), pero con valor de portafolio
+  demostrado con evidencia.
 
 ---
 

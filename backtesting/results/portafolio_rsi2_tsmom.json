@@ -1,0 +1,122 @@
+{
+  "rsi2_standalone": {
+    "retorno_total_pct": 1.44,
+    "cagr_pct": 0.14,
+    "vol_anual_pct": 0.25,
+    "sharpe": 0.548,
+    "max_dd_pct": -0.68,
+    "ventanas_positivas": "28/43",
+    "frac_positivas": 0.651
+  },
+  "tsmom_standalone": {
+    "retorno_total_pct": 57.92,
+    "cagr_pct": 4.46,
+    "vol_anual_pct": 5.72,
+    "sharpe": 0.792,
+    "max_dd_pct": -8.06,
+    "ventanas_positivas": "29/43",
+    "frac_positivas": 0.674
+  },
+  "correlacion": {
+    "diaria": 0.2604,
+    "mensual": 0.2669
+  },
+  "combinado": [
+    {
+      "w_tsmom": 0.0,
+      "retorno_total_pct": 1.44,
+      "cagr_pct": 0.14,
+      "vol_anual_pct": 0.25,
+      "sharpe": 0.548,
+      "max_dd_pct": -0.68,
+      "ventanas_positivas": "28/43",
+      "frac_positivas": 0.651
+    },
+    {
+      "w_tsmom": 0.2,
+      "retorno_total_pct": 11.13,
+      "cagr_pct": 1.01,
+      "vol_anual_pct": 1.21,
+      "sharpe": 0.839,
+      "max_dd_pct": -1.87,
+      "ventanas_positivas": "30/43",
+      "frac_positivas": 0.698
+    },
+    {
+      "w_tsmom": 0.3,
+      "retorno_total_pct": 16.26,
+      "cagr_pct": 1.45,
+      "vol_anual_pct": 1.77,
+      "sharpe": 0.823,
+      "max_dd_pct": -2.65,
+      "ventanas_positivas": "30/43",
+      "frac_positivas": 0.698
+    },
+    {
+      "w_tsmom": 0.4,
+      "retorno_total_pct": 21.58,
+      "cagr_pct": 1.88,
+      "vol_anual_pct": 2.33,
+      "sharpe": 0.813,
+      "max_dd_pct": -3.44,
+      "ventanas_positivas": "30/43",
+      "frac_positivas": 0.698
+    },
+    {
+      "w_tsmom": 0.5,
+      "retorno_total_pct": 27.1,
+      "cagr_pct": 2.32,
+      "vol_anual_pct": 2.89,
+      "sharpe": 0.806,
+      "max_dd_pct": -4.22,
+      "ventanas_positivas": "30/43",
+      "frac_positivas": 0.698
+    },
+    {
+      "w_tsmom": 0.6,
+      "retorno_total_pct": 32.83,
+      "cagr_pct": 2.75,
+      "vol_anual_pct": 3.46,
+      "sharpe": 0.802,
+      "max_dd_pct": -4.99,
+      "ventanas_positivas": "30/43",
+      "frac_positivas": 0.698
+    },
+    {
+      "w_tsmom": 0.7,
+      "retorno_total_pct": 38.77,
+      "cagr_pct": 3.18,
+      "vol_anual_pct": 4.02,
+      "sharpe": 0.799,
+      "max_dd_pct": -5.76,
+      "ventanas_positivas": "29/43",
+      "frac_positivas": 0.674
+    },
+    {
+      "w_tsmom": 1.0,
+      "retorno_total_pct": 57.92,
+      "cagr_pct": 4.46,
+      "vol_anual_pct": 5.72,
+      "sharpe": 0.792,
+      "max_dd_pct": -8.06,
+      "ventanas_positivas": "29/43",
+      "frac_positivas": 0.674
+    }
+  ],
+  "mejor": {
+    "w_tsmom": 0.2,
+    "retorno_total_pct": 11.13,
+    "cagr_pct": 1.01,
+    "vol_anual_pct": 1.21,
+    "sharpe": 0.839,
+    "max_dd_pct": -1.87,
+    "ventanas_positivas": "30/43",
+    "frac_positivas": 0.698
+  },
+  "delta_sharpe": 0.291,
+  "fechas": {
+    "inicio": "2016-02-02",
+    "fin": "2026-07-30",
+    "sesiones": 2638
+  }
+}

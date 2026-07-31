@@ -285,8 +285,14 @@ def ejecutar_backtest_rsi2(
     costos: float = COST_ROUNDTRIP,
     usar_agentes: bool = False,
     save: bool = False,
+    include_daily: bool = False,
 ) -> dict:
-    """Backtest de RSI(2) mean reversion en SPY."""
+    """Backtest de RSI(2) mean reversion en SPY.
+
+    include_daily: si True, anade al resultado la serie diaria de retornos
+    de la curva de equity (ret_diario) para mediciones de portafolio.
+    Aditivo, no cambia el comportamiento default.
+    """
     if df is None:
         df = cargar_datos_spy()
     if config is None:
@@ -546,14 +552,14 @@ def ejecutar_backtest_rsi2(
     print(f"\n  {'='*55}")
     es_rentable = ret > 0 and wr >= 55
     if es_rentable:
-        print(f"  ✅ MODELO APTO: WR {wr:.1f}% > 55% | Retorno {ret:+.2f}% > 0%")
+        print(f"  [OK] MODELO APTO: WR {wr:.1f}% > 55% | Retorno {ret:+.2f}% > 0%")
         print(f"  Conecta al pipeline: python -m models.rsi2_spy_system --senal")
         print(f"  Luego: python -m models.pipeline_agentes")
     elif ret > 0:
-        print(f"  ⚠️  WR {wr:.1f}% < 55% pero rentabilidad positiva ({ret:+.2f}%)")
+        print(f"  [!] WR {wr:.1f}% < 55% pero rentabilidad positiva ({ret:+.2f}%)")
         print(f"  Evaluar si el perfil riesgo/retorno es aceptable.")
     else:
-        print(f"  ❌ MODELO NO APTO: WR {wr:.1f}% | Rentabilidad {ret:+.2f}%")
+        print(f"  [X] MODELO NO APTO: WR {wr:.1f}% | Rentabilidad {ret:+.2f}%")
     print(f"  {'='*55}\n")
 
     result = {
@@ -574,6 +580,17 @@ def ejecutar_backtest_rsi2(
         "config": config if save else None,
         "tiempo_seg": round(time.time() - inicio, 1),
     }
+
+    if include_daily:
+        # equity[0] = capital inicial; cada append es la equity al cierre del bar.
+        # Alineacion: equity[k] corresponde a df.index[start_idx - 1 + k].
+        eq_idx = df.index[max(0, start_idx - 1):]
+        eq_serie = pd.Series(equity, index=eq_idx[:len(equity)])
+        ret_diario = eq_serie.pct_change().dropna()
+        result["ret_diario"] = {
+            "fechas": [d.strftime("%Y-%m-%d") for d in ret_diario.index],
+            "retornos": [round(float(v), 6) for v in ret_diario],
+        }
 
     if save:
         output_dir = os.path.normpath(os.path.join(
