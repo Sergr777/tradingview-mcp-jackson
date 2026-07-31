@@ -315,17 +315,17 @@ class SentimentAgent:
         # 1. Fear & Greed Index
         fng = self.obtener_fng()
         score_fng = self.fng_a_score(fng['value'])
-        print(f"  [SENTIMENT] Fear & Greed: {fng['value']}/100 ({fng['classification']}) → score {score_fng:+.3f}")
+        print(f"  [SENTIMENT] Fear & Greed: {fng['value']}/100 ({fng['classification']}) -> score {score_fng:+.3f}")
 
         # 2. Noticias con VADER
         news_result = self.analizar_noticias()
         score_news = news_result.get('score', 0.0)
-        print(f"  [SENTIMENT] Noticias VADER: {news_result.get('n_headlines', 0)} titulares → score {score_news:+.3f}")
+        print(f"  [SENTIMENT] Noticias VADER: {news_result.get('n_headlines', 0)} titulares -> score {score_news:+.3f}")
 
         # 3. Macro
         macro = self.obtener_macro()
         score_macro = macro.get('dominance_score', 0.0)
-        print(f"  [SENTIMENT] Macro (BTC dom): {macro.get('btc_dominance', 0)}% → score {score_macro:+.3f}")
+        print(f"  [SENTIMENT] Macro (BTC dom): {macro.get('btc_dominance', 0)}% -> score {score_macro:+.3f}")
 
         # Score compuesto ponderado
         score_total = (
@@ -538,7 +538,7 @@ def ajustar_senal_actual(agent: Optional[SentimentAgent] = None) -> Optional[Dic
     print(f"  VADER news:    {s.get('news_vader', 0):+.4f}")
     print(f"  Score comp:    {s.get('score_compuesto', 0):+.4f} ({s.get('interpretacion', 'N/A')})")
     print(f"  Factor ajuste: {s.get('factor_ajuste', 1.0):.4f}x")
-    print(f"  Confianza:     {s.get('confianza_original', 0):.2%} → {s.get('confianza_ajustada', 0):.2%}")
+    print(f"  Confianza:     {s.get('confianza_original', 0):.2%} -> {s.get('confianza_ajustada', 0):.2%}")
     print(f"  Direccion:     {sig.get('direction', 'SIN SEN~AL')}")
 
     return senal_ajustada
@@ -569,7 +569,7 @@ def main():
     elif args.action == "fng":
         fng = agent.obtener_fng()
         score = agent.fng_a_score(fng['value'])
-        print(f"Fear & Greed: {fng['value']}/100 ({fng['classification']}) → score {score:+.3f}")
+        print(f"Fear & Greed: {fng['value']}/100 ({fng['classification']}) -> score {score:+.3f}")
 
     elif args.action == "news":
         news = agent.analizar_noticias()

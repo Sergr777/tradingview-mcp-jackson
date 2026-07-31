@@ -210,7 +210,7 @@ class EjecutorSenales:
                 with open(POSITION_FILE, "r", encoding="utf-8") as f:
                     self.posicion_actual = json.load(f)
                     if self.posicion_actual.get("status") == "OPEN":
-                        print(f"  [STATE] Posición OPEN recuperada: {self.posicion_actual['direction']} "
+                        print(f"  [STATE] Posicion OPEN recuperada: {self.posicion_actual['direction']} "
                               f"{self.posicion_actual['asset']} @ ${self.posicion_actual['entry_price']}")
             except (json.JSONDecodeError, KeyError):
                 self.posicion_actual = None
@@ -459,11 +459,11 @@ class EjecutorSenales:
             print(f"  [ERROR] Modo desconocido: {self.mode}")
             return None
 
-        print(f"\n  {'─' * 40}")
-        print(f"  🚀 POSICIÓN ABIERTA ({self.mode.upper()})")
-        print(f"  {'─' * 40}")
+        print(f"\n  {'-' * 40}")
+        print(f"  [OK] POSICION ABIERTA ({self.mode.upper()})")
+        print(f"  {'-' * 40}")
         print(f"  Activo:     {posicion['asset']}")
-        print(f"  Dirección:  {posicion['direction']}")
+        print(f"  Direccion:  {posicion['direction']}")
         print(f"  Entrada:    ${posicion['entry_price']:,.2f}")
         print(f"  Capital:    ${posicion['capital_empleado']:,.2f}")
         print(f"  Unidades:   {posicion['unidades']:.6f}")
@@ -471,7 +471,7 @@ class EjecutorSenales:
         print(f"  TP:         ${posicion['tp_price']:,.2f}")
         print(f"  Confianza:  {posicion['confidence']:.2%}")
         print(f"  Factores:   {posicion['sizing_factors']}")
-        print(f"  {'─' * 40}")
+        print(f"  {'-' * 40}")
 
         return posicion
 
@@ -569,43 +569,43 @@ class EjecutorSenales:
         print("\n[1/3] Verificando posición actual...")
         cierre = self.verificar_salida()
         if cierre:
-            print(f"  ✅ POSICIÓN CERRADA: {cierre['exit_reason']}")
+            print(f"  [OK] POSICION CERRADA: {cierre['exit_reason']}")
             print(f"     PnL: {cierre['pnl_pct']:+.2f}% (${cierre['pnl_usd']:+.2f})")
         else:
-            print(f"  Posición actual: {self.posicion_actual['direction'] if self.posicion_actual else 'NINGUNA'}")
+            print(f"  Posicion actual: {self.posicion_actual['direction'] if self.posicion_actual else 'NINGUNA'}")
 
         # Paso 2: Leer y validar señal
         print("\n[2/3] Leyendo última señal...")
         senal = self.leer_ultima_senal()
         if senal is None:
-            print("  ⚠ No hay señal disponible")
+            print("  [!] No hay senal disponible")
             reporte = self.generar_reporte()
             return reporte
 
         valida, razon = self.validar_senal(senal)
         if valida:
-            print(f"  ✅ Señal válida: {senal['signal']['direction']} @ "
+            print(f"  [OK] Senal valida: {senal['signal']['direction']} @ "
                   f"${senal['market_state']['price']:,.2f} | "
                   f"Conf: {senal['signal']['confidence']:.2%}")
         else:
-            print(f"  ⚠ Señal rechazada: {razon}")
+            print(f"  [!] Senal rechazada: {razon}")
 
         # Paso 3: Abrir/actualizar posición
         print("\n[3/3] Ejecutando...")
         if valida and (not self.posicion_actual or self.posicion_actual.get("status") != "OPEN"):
             trade = self.abrir_posicion(senal, capital_estrategia)
             if trade:
-                print(f"  ✅ TRADE EJECUTADO ({self.mode.upper()})")
+                print(f"  [OK] TRADE EJECUTADO ({self.mode.upper()})")
         elif not valida:
-            print("  ⏭ No se ejecuta trade (señal no válida)")
+            print("  [-] No se ejecuta trade (senal no valida)")
         else:
-            print("  ⏭ Posición existente mantenida. Esperando salida...")
+            print("  [-] Posicion existente mantenida. Esperando salida...")
 
         # Reporte final
         print("\n" + "=" * 70)
         reporte = self.generar_reporte()
-        print(f"  📊 REPORTE DE ESTADO")
-        print(f"  {'─' * 40}")
+        print(f"  [REPORTE] ESTADO")
+        print(f"  {'-' * 40}")
         print(f"  Capital:      ${reporte['capital_disponible']:,.2f} / ${reporte['capital_total']:,.2f}")
         print(f"  Drawdown:     {reporte['drawdown_actual']:.2f}% (max: {reporte['max_drawdown']:.2f}%)")
         print(f"  Posición:     {reporte['posicion_actual']}")
@@ -625,6 +625,12 @@ class EjecutorSenales:
 # =============================================================================
 
 def main():
+    # Fix robusto: stdout/stderr en UTF-8 evita crashes de encoding (cp1252) en Windows
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     parser = argparse.ArgumentParser(
         description="Ejecutor de Señales - Capa Operativa"
     )
@@ -644,7 +650,7 @@ def main():
 
     if args.dry_run:
         print("=" * 70)
-        print("  🔍 DRY RUN - Simulación sin ejecución")
+        print("  [DRY-RUN] Simulacion sin ejecucion")
         print("=" * 70)
         senal = EjecutorSenales(capital=args.capital, mode="paper").leer_ultima_senal()
         if senal:

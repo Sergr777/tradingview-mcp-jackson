@@ -586,6 +586,12 @@ class PipelineAgentes:
 # =============================================================================
 
 def main():
+    # Fix robusto: stdout/stderr en UTF-8 evita crashes de encoding (cp1252) en Windows
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     parser = argparse.ArgumentParser(
         description="Pipeline de Agentes invest_criptoai — KRONOS -> ORACULO -> PROPHET -> MNEMO -> SENTIMENT"
     )

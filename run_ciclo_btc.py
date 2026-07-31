@@ -116,9 +116,9 @@ class OrquestadorCicloBTC:
         Ejecuta el generador de señales como script directo.
         Returns: 0 = señal generada, 1 = sin señal, 2 = error
         """
-        print("\n" + "█" * 70)
-        print("  █ FASE 1: ANÁLISIS — Generador de Señales OB System")
-        print("█" * 70)
+        print("\n" + "#" * 70)
+        print("  # FASE 1: ANALISIS — Generador de Senales OB System")
+        print("#" * 70)
 
         script_path = os.path.join(PROJECT_ROOT, "models", "generador_senales.py")
         cmd = [
@@ -285,9 +285,9 @@ class OrquestadorCicloBTC:
 
     def _ejecutar_operaciones(self) -> int:
         """Ejecuta el ejecutor de señales como script directo."""
-        print("\n" + "█" * 70)
-        print("  █ FASE 2: OPERACIONES — Ejecutor de Señales")
-        print("█" * 70)
+        print("\n" + "#" * 70)
+        print("  # FASE 2: OPERACIONES — Ejecutor de Senales")
+        print("#" * 70)
 
         script_path = os.path.join(PROJECT_ROOT, "portfolios", "ejecutor_senales.py")
         cmd = [
@@ -391,9 +391,9 @@ class OrquestadorCicloBTC:
             json.dump(reporte, f, indent=2, ensure_ascii=False, default=str)
 
         # Resumen con timing
-        print("\n" + "█" * 70)
-        print("  █ RESUMEN DEL CICLO BTC 15m")
-        print("█" * 70)
+        print("\n" + "#" * 70)
+        print("  # RESUMEN DEL CICLO BTC 15m")
+        print("#" * 70)
         fase_a = reporte["fases"]["analisis"]
         fase_o = reporte["fases"]["operaciones"]
         print(f"  Análisis:     {fase_a['estado']} (exit: {fase_a['exit_code']})")
@@ -411,7 +411,7 @@ class OrquestadorCicloBTC:
                   f"Operaciones {timing.get('operaciones',0):.1f}s")
         print(f"  Modo:         {self.mode}")
         print(f"  Reporte:      {REPORTE_LOG}")
-        print("█" * 70 + "\n")
+        print("#" * 70 + "\n")
 
         return reporte
 
@@ -448,7 +448,7 @@ class OrquestadorCicloBTC:
             codigo_operaciones = self._ejecutar_operaciones()
             t_fases['operaciones'] = time.perf_counter() - t0
         else:
-            print("  ⚠ Análisis falló. Saltando fase operativa.")
+            print("  [!] Análisis falló. Saltando fase operativa.")
 
         duracion = time.time() - inicio
         t_fases['total'] = duracion
@@ -464,8 +464,14 @@ class OrquestadorCicloBTC:
 # =============================================================================
 
 def main():
+    # Fix robusto: stdout/stderr en UTF-8 evita crashes de encoding (cp1252) en Windows
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     parser = argparse.ArgumentParser(
-        description="Orquestador del Ciclo BTC 15m — Análisis → Operaciones"
+        description="Orquestador del Ciclo BTC 15m — Análisis -> Operaciones"
     )
     parser.add_argument(
         "--capital", type=float, default=25000.0,
@@ -541,7 +547,7 @@ def main():
                 print(f"\n  ⏹ Daemon detenido por usuario después de {iteracion} ciclos.")
                 break
             except Exception as e:
-                print(f"\n  ❌ Error en ciclo #{iteracion}: {e}")
+                print(f"\n  [X] Error en ciclo #{iteracion}: {e}")
 
             print(f"\n  ⏳ Próximo ciclo en {args.interval} minutos...")
             try:

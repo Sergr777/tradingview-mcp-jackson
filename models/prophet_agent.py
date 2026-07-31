@@ -300,7 +300,7 @@ class ProphetAgent:
         print(f"  AUC: {auc:.4f} | Accuracy: {acc:.2%}")
         print(f"  Mejores features:")
         for _, row in importancia.head(5).iterrows():
-            print(f"    {row['feature']:20s} → {row['importance']:.0f}")
+            print(f"    {row['feature']:20s} -> {row['importance']:.0f}")
 
         return self.metrics
 

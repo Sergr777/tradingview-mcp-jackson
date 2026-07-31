@@ -720,7 +720,7 @@ def main():
 
     elif args.action == "reset":
         if not args.force:
-            print("  ⚠ Para resetear la memoria, usa --force")
+            print("  [!] Para resetear la memoria, usa --force")
             return
         if os.path.exists(DB_PATH):
             os.remove(DB_PATH)
