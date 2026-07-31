@@ -180,6 +180,7 @@ class EjecutorPortafolioRSI2TSMOM:
                 w_tsmom = float(w_senal)
         capital_rsi2 = self.capital_total * (1 - w_tsmom)
         capital_tsmom = self.capital_total * w_tsmom
+        peso_desde_senal = (w_tsmom != self.w_tsmom)
 
         positions: List[Dict] = []
         detalles: Dict[str, Dict] = {}
@@ -253,6 +254,10 @@ class EjecutorPortafolioRSI2TSMOM:
                         if p["direction"] == "SHORT") / self.capital_total
 
         warnings = []
+        if peso_desde_senal:
+            warnings.append(
+                f"el peso del sleeve TSMOM ({w_tsmom:.0%}) proviene de la senal "
+                f"(position_size_pct) y sobreescribe --w-tsmom ({self.w_tsmom:.0%})")
         if gross_pct > MAX_GROSS_EXPOSURE:
             warnings.append(
                 f"exposicion bruta {gross_pct:.1%} > limite "
@@ -268,10 +273,12 @@ class EjecutorPortafolioRSI2TSMOM:
             "source": "RSI2+TSMOM_PORTFOLIO",
             "config": {
                 "capital_total": self.capital_total,
-                "w_tsmom": self.w_tsmom,
+                "w_tsmom_constructor": self.w_tsmom,
+                "w_tsmom_efectivo": round(w_tsmom, 4),
+                "w_tsmom_desde_senal": peso_desde_senal,
                 "mode": self.mode,
                 "dry_run": self.dry_run,
-                "version": "0.1.0",
+                "version": "0.1.1",
             },
             "sleeves": detalles,
             "positions": positions,
@@ -294,10 +301,14 @@ class EjecutorPortafolioRSI2TSMOM:
         print("\n" + "=" * 78)
         print("  PORTAFOLIO RSI(2) SPY + TSMOM 24m — PAPER TRADING")
         print("=" * 78)
+        cfg = plan["config"]
+        w_ef = cfg["w_tsmom_efectivo"]
         print(f"  Capital total:    ${self.capital_total:,.2f}")
-        print(f"  w TSMOM (sleeve): {self.w_tsmom:.0%} -> "
-              f"${plan['sleeves']['tsmom']['capital_sleeve']:,.2f}")
-        print(f"  w RSI2  (sleeve): {1 - self.w_tsmom:.0%} -> "
+        print(f"  w TSMOM (sleeve): {w_ef:.0%} -> "
+              f"${plan['sleeves']['tsmom']['capital_sleeve']:,.2f}"
+              + (f"  (desde la senal, --w-tsmom {cfg['w_tsmom_constructor']:.0%} "
+                 f"sobreescrito)" if cfg["w_tsmom_desde_senal"] else ""))
+        print(f"  w RSI2  (sleeve): {1 - w_ef:.0%} -> "
               f"${plan['sleeves']['rsi2']['capital_sleeve']:,.2f}")
         print("-" * 78)
         for k in ("rsi2", "tsmom"):
@@ -367,7 +378,9 @@ def main():
     parser.add_argument("--capital", type=float, default=100000.0,
                         help="Capital total del portafolio (default: $100,000)")
     parser.add_argument("--w-tsmom", type=float, default=DEFAULT_W_TSMOM,
-                        help="Peso del sleeve TSMOM (default: 0.2)")
+                        help="Peso del sleeve TSMOM (default: 0.2). Si la senal "
+                             "TSMOM trae position_size_pct, ese valor tiene "
+                             "precedencia sobre este flag.")
     parser.add_argument("--mode", choices=["paper"], default="paper",
                         help="Modo de ejecucion (default: paper)")
     parser.add_argument("--dry-run", action="store_true",

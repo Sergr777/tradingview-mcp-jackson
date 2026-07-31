@@ -107,7 +107,10 @@ class TestSizingCombinado(unittest.TestCase):
                                20000.0, places=2)
         self.assertAlmostEqual(plan["sleeves"]["rsi2"]["capital_sleeve"],
                                80000.0, places=2)
-        self.assertEqual(plan["config"]["w_tsmom"], DEFAULT_W_TSMOM)
+        # La fixture TSMOM trae position_size_pct=0.20 = mismo valor que el
+        # constructor -> peso efectivo 0.20, no marcado como "desde senal"
+        self.assertEqual(plan["config"]["w_tsmom_efectivo"], DEFAULT_W_TSMOM)
+        self.assertFalse(plan["config"]["w_tsmom_desde_senal"])
 
     def test_peso_sleeve_desde_la_senal(self):
         # La senal TSMOM es la fuente de verdad del peso del sleeve:
@@ -119,6 +122,10 @@ class TestSizingCombinado(unittest.TestCase):
                                30000.0, places=2)
         self.assertAlmostEqual(plan["sleeves"]["rsi2"]["capital_sleeve"],
                                70000.0, places=2)
+        self.assertAlmostEqual(plan["config"]["w_tsmom_efectivo"], 0.30, places=4)
+        self.assertTrue(plan["config"]["w_tsmom_desde_senal"])
+        # El warning debe avisar que la senal sobreescribe --w-tsmom
+        self.assertTrue(any("sobreescribe" in w for w in plan["warnings"]))
 
     # ── 2. Sizing sleeve RSI2 (5% fijo del sleeve) ──
     def test_sizing_rsi2_5pct_del_sleeve(self):
