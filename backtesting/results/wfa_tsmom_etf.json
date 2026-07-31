@@ -1,0 +1,113 @@
+{
+  "modelo": "TSMOM_MULTI_ETF",
+  "version": "0.1.0",
+  "config": {
+    "name": "TSMOM_MULTI_ETF",
+    "version": "0.1.0",
+    "timeframe": "1d",
+    "universe": [
+      "SPY",
+      "QQQ",
+      "GLD",
+      "SLV",
+      "TLT",
+      "IEI",
+      "EEM",
+      "IWM",
+      "XLE",
+      "XLV"
+    ],
+    "lookback_months": 12,
+    "target_vol": 0.1,
+    "vol_lookback": 20,
+    "max_weight": 1.5,
+    "rebalance_days": 21,
+    "cost_per_turnover": 0.001,
+    "min_assets": 3
+  },
+  "metricas_globales": {
+    "retorno_total_pct": 21.81,
+    "sharpe": 0.31,
+    "max_dd": -13.76,
+    "trades_anio": 11.0,
+    "wr_rebalances_pct": 58.7,
+    "corr_spy": 0.3529,
+    "ventanas_positivas": "9/12"
+  },
+  "ventanas": [
+    {
+      "anio": 2015,
+      "retorno": 3.54,
+      "sharpe": 0.84,
+      "max_dd": -3.12
+    },
+    {
+      "anio": 2016,
+      "retorno": -9.27,
+      "sharpe": -1.63,
+      "max_dd": -10.56
+    },
+    {
+      "anio": 2017,
+      "retorno": 3.64,
+      "sharpe": 0.65,
+      "max_dd": -4.76
+    },
+    {
+      "anio": 2018,
+      "retorno": -3.76,
+      "sharpe": -0.47,
+      "max_dd": -9.22
+    },
+    {
+      "anio": 2019,
+      "retorno": 2.33,
+      "sharpe": 0.6,
+      "max_dd": -3.72
+    },
+    {
+      "anio": 2020,
+      "retorno": 8.65,
+      "sharpe": 1.34,
+      "max_dd": -3.68
+    },
+    {
+      "anio": 2021,
+      "retorno": 3.67,
+      "sharpe": 0.59,
+      "max_dd": -3.64
+    },
+    {
+      "anio": 2022,
+      "retorno": 2.53,
+      "sharpe": 0.49,
+      "max_dd": -4.59
+    },
+    {
+      "anio": 2023,
+      "retorno": -6.95,
+      "sharpe": -1.73,
+      "max_dd": -8.48
+    },
+    {
+      "anio": 2024,
+      "retorno": 3.24,
+      "sharpe": 0.54,
+      "max_dd": -5.69
+    },
+    {
+      "anio": 2025,
+      "retorno": 9.96,
+      "sharpe": 1.63,
+      "max_dd": -5.03
+    },
+    {
+      "anio": 2026,
+      "retorno": 4.14,
+      "sharpe": 1.05,
+      "max_dd": -3.99
+    }
+  ],
+  "es_aprobado": "False",
+  "tiempo_seg": 0.7
+}

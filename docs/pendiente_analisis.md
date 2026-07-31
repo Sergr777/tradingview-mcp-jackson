@@ -159,17 +159,85 @@ ventana actual). La Opción A (reducir umbral/frecuencia) quedó descartada.
 
 ---
 
-## 4. 📌 Resumen de decisiones
+## 4. ⏳ tsmom_etf — Time-Series Momentum Multi-ETF (diario)
+
+**Fecha de evaluación:** 2026-07-31
+**Estado:** ⏳ **Pendiente de corrección y validación** (backtest OOS ejecutado,
+**NO apto**: Sharpe < 1.0 en todas las configs del grid)
+
+### Qué es
+Sistema de momentum de serie temporal (Moskowitz, Ooi & Pedersen 2012) sobre el
+universo de 10 ETFs multi-clase (SPY/QQQ/GLD/SLV/TLT/IEI/EEM/IWM/XLE/XLV) con
+volatility targeting y rebalanceo mensual. Diseñado como complemento del RSI(2)
+SPY (mean reversion): cubre tendencias sostenidas donde el RSI(2) no opera.
+Implementación en `models/tsmom_etf.py`.
+
+### Resultado del backtest baseline (lookback 12m, target_vol 10%)
+
+| Métrica | Valor | Umbral apto | ✅/❌ |
+|---------|-------|-------------|:-----:|
+| Retorno total OOS | **+21.81%** | >0% | ✅ |
+| Sharpe | **0.31** | >1.0 | ❌ |
+| Max DD | **-13.76%** | <20% | ✅ |
+| Trades/año | **11.0** | ~50-80 | ❌ |
+| WR rebalances | **58.7%** | — | — |
+| Correlación con SPY | **0.353** | baja | ✅ |
+| Ventanas anuales positivas | **9/12** | ≥60% | ✅ |
+
+### Grid de robustez (lookback × vol objetivo) — ninguna config apta
+
+| Config | Ret% | Sharpe | MaxDD% | WR% | Vent+ | Apto |
+|--------|-----:|:------:|:------:|:---:|:-----:|:----:|
+| lb6_v10 | +30.00 | 0.40 | -14.86 | 57.6 | 7/12 | ❌ |
+| lb12_v10 (baseline) | +21.81 | 0.31 | -13.76 | 58.7 | 9/12 | ❌ |
+| **lb24_v10** | **+57.97** | **0.72** | **-8.06** | **65.9** | 8/12 | ❌ |
+| lb12_v08 | +17.62 | 0.31 | -11.05 | 58.0 | 9/12 | ❌ |
+| lb12_v15 | +29.98 | 0.29 | -21.21 | 57.2 | 9/12 | ❌ |
+| lb6_v08 | +24.00 | 0.40 | -11.78 | 57.6 | 7/12 | ❌ |
+
+### Diagnóstico (por qué NO es apto)
+1. **Sharpe bajo (0.31-0.72)**: el retorno positivo existe pero la volatilidad del
+   portafolio lo diluye. TSMOM clásico depende de rachas de tendencia largas que
+   en 10 ETFs diarios 2014-2026 son irregulares (2016 y 2023 fueron años
+   fuertemente negativos, -9.27% y -6.95%).
+2. **Mejor config: lookback 24m (lb24_v10)** con Sharpe 0.72, retorno +57.97% y
+   MaxDD -8.06% (WR 65.9%) — notablemente mejor que el baseline de 12m. Sugiere
+   que el momentum en este universo es más fuerte en horizontes largos, pero aún
+   no supera el umbral de aptitud (Sharpe>1.0).
+3. **Correlación con SPY moderada (0.33-0.49)**: menor que un buy-and-hold puro
+   pero más alta que el ETF pairs (0.027) — el vol targeting escala todo con SPY.
+4. Metodología validada: OOS por construcción (sin parámetros ajustados
+   in-sample), sin look-ahead, costos por turnover, rebalanceo mensual.
+
+### Archivos
+- `models/tsmom_etf.py` — sistema TSMOM completo con vol targeting
+- `backtesting/comparar_tsmom_parametros.py` — grid de robustez
+- `backtesting/results/wfa_tsmom_etf.json` — resultados baseline
+- `backtesting/results/comparativa_tsmom_parametros.json` — grid
+
+### Próximo paso (cuando se retome)
+Opción A: adoptar lookback 24m como config principal (Sharpe 0.72, +57.97%) y
+re-validar con ventanas 3m para comprobar estabilidad. Opción B: subir el peso de
+los activos de baja correlación con SPY (bonos TLT/IEI) o añadir filtro de régimen
+(no operar en rangos). Opción C: combinar con el ETF pairs descartado para
+comparar perfiles. El grid de 6 configs no encontró ninguna con Sharpe>1.0.
+
+---
+
+## 5. 📌 Resumen de decisiones
 
 - La v1 validada (`models/ob_crypto_wfa.py`, `models/ob_forex_wfa.py`) y el modelo
   RSI(2) SPY validado (`models/rsi2_spy_system.py`) **no se tocan** — siguen siendo
   la referencia operativa del pipeline invest_criptoai.
-- Los V2 (OB crypto/forex) y el ETF Pairs Arbitraje quedan **pendientes de
-  corrección y validación** hasta que se resuelvan sus bloqueadores y se corran
-  con datos reales y métricas completas.
-- **ETF Pairs Arbitraje ya tiene implementación y backtest honesto**: el diseño es
-  correcto (sin look-ahead, costos reales, neutralidad de mercado confirmada),
-  pero el edge no se sostiene out-of-sample con los parámetros actuales.
+- Los V2 (OB crypto/forex), el ETF Pairs Arbitraje y el TSMOM multi-ETF quedan
+  **pendientes de corrección y validación** hasta que se resuelvan sus bloqueadores
+  y se validen con datos reales y métricas completas.
+- **ETF Pairs Arbitraje** ya tiene implementación y backtest honesto (edge no
+  sostenible out-of-sample; Opción A de frecuencia descartada con evidencia).
+- **TSMOM multi-ETF** ya tiene implementación y backtest honesto: metodología
+  correcta (OOS por construcción, sin look-ahead), retorno positivo en todas las
+  configs, pero Sharpe < 1.0 en las 6 del grid. El lookback 24m (lb24_v10) es el
+  más prometedor (Sharpe 0.72, +57.97%) y queda como camino principal al retomar.
 
 ---
 
