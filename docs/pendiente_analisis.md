@@ -151,11 +151,57 @@ estable**: operar más seguido solo amplifica las pérdidas. La Opción A queda
 Resultados guardados en `backtesting/results/comparativa_etf_pairs_parametros.json`
 y `backtesting/results/wfa_etf_pairs_e1.5_z40.json` (config Opción A principal).
 
+### Opción C ejecutada: re-test de cointegración por ventana — 2026-07-31
+
+Se implementó el re-test de cointegración por ventana en `models/etf_pairs_arbitraje.py`
+(config: `retest_coint`, `coint_p_threshold`, `coint_lookback`): antes de operar
+un par en cada ventana de test, se re-testa el Engle-Granger ADF sobre los datos
+recientes del train (últimas `coint_lookback` sesiones, sin look-ahead). Si
+ADF p >= umbral, el par queda en **cash** esa ventana. Grid de 4 configs:
+
+| Config | Trades/año | WR% | PF | Sharpe | MaxDD% | Ret OOS% | Aprob |
+|--------|:----------:|:---:|:---:|:------:|:------:|:--------:|:-----:|
+| baseline (sin re-test) | 7.8 | 53.85 | 0.766 | -0.232 | -15.86 | -8.04 | 4/10 |
+| **ADF p<0.10 lb=250** | **1.4** | **71.43** | **4.069** | **0.565** | **-4.06** | **+10.60** | 3/10 |
+| ADF p<0.05 lb=250 | 1.1 | 72.73 | 3.926 | 0.490 | -4.36 | +8.93 | 2/10 |
+| ADF p<0.10 lb=125 | 3.0 | 53.33 | 0.599 | -0.070 | -10.96 | -2.52 | 3/10 |
+
+**Detalle por ventana (ADF p<0.10 lb=250):** el re-test filtró exactamente las
+ventanas que el diagnóstico señaló como el problema:
+
+| Ventana | Trades | WR% | PF | Ret% | Pares activos |
+|---------|:------:|:---:|:---:|:----:|:--------------|
+| 2014-2016 | 4 | 75 | 4.92 | +4.97 | GLD/SLV |
+| 2015-2017 | 0 | — | — | 0.00 | (cash) |
+| 2016-2018 | 0 | — | — | 0.00 | (cash) |
+| 2017-2019 | 3 | 67 | 5.26 | +1.54 | SPY/QQQ |
+| 2018-2020 | 2 | 50 | 1.06 | +0.03 | SPY/QQQ |
+| 2019-2021 | 5 | 80 | 11.86 | +3.74 | SPY/QQQ |
+| 2020-2022 a 2023-2025 | 0 | — | — | 0.00 | (cash, 4 ventanas) |
+
+**Conclusión (honesta):** la Opción C **invierte el perfil del edge** — el
+re-test elimina las ventanas sin cointegración (2015-2017, 2016-2018 y
+2020-2025), que son precisamente las que hundían al baseline, y entre las 4
+ventanas que sí operaron, **3/4 fueron aprobadas (75%)** vs 4/10 del baseline.
+El resultado: PF 4.07, retorno OOS +10.60%, MaxDD -4.06% y WR 71.4% — un edge
+**mucho más limpio**. PERO: (1) la frecuencia colapsa a **1.4 trades/año** (14
+en 10 años), eliminando el beneficio de frecuencia que justificaba el sistema
+(proyección 50-80/año); (2) el Sharpe global sigue **0.565 < 1.0** → **NO APTO**.
+Nota metodológica: las ventanas en cash (0 trades) se auto-marcan como "no
+aprobadas" (WR 0 < 55), lo que subestima la calidad del filtro en la métrica
+`ventanas_aprobadas` — entre las ventanas que realmente operaron, la aprobación
+es 3/4.
+
+Resultados guardados en `backtesting/results/comparativa_etf_pairs_opcion_c.json`.
+
 ### Próximo paso (cuando se retome)
 Opción B: añadir régimen de tendencia (ADX/Hurst) como filtro de "no operar en
-trending" — las ventanas perdedoras son las trending. Opción C: re-test de
-cointegración por ventana antes de operar (solo entrar si ADF p<0.10 en la
-ventana actual). La Opción A (reducir umbral/frecuencia) quedó descartada.
+trending" — las ventanas perdedoras son las trending. La Opción A (reducir
+umbral/frecuencia) y la Opción C (re-test ADF) quedaron **descartadas con
+evidencia** (la C confirmó el diagnóstico de la raíz: la cointegración es
+inestable por ventana y las no-cointegradas son las que pierden — pero filtrarlas
+también elimina la frecuencia que el sistema necesita). El ETF pairs queda
+**pendiente** sin camino de corrección simple identificado.
 
 ---
 
@@ -384,7 +430,11 @@ insuficiente para aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
   **pendientes de corrección y validación** hasta que se resuelvan sus bloqueadores
   y se validen con datos reales y métricas completas.
 - **ETF Pairs Arbitraje** ya tiene implementación y backtest honesto (edge no
-  sostenible out-of-sample; Opción A de frecuencia descartada con evidencia).
+  sostenible out-of-sample; Opciones A y C descartadas con evidencia). La
+  Opción C (re-test ADF) confirmó la raíz del problema: la cointegración es
+  inestable por ventana y las ventanas no-cointegradas son las perdedoras —
+  pero filtrarlas deja 1.4 trades/año (frecuencia insuficiente) y Sharpe 0.565
+  < 1.0. Sin camino de corrección simple identificado.
 - **TSMOM multi-ETF** ya tiene implementación y backtest honesto: metodología
   correcta (OOS por construcción, sin look-ahead), retorno positivo en todas las
   configs, pero Sharpe < 1.0 en las 6 del grid. La re-validación de la Opción A

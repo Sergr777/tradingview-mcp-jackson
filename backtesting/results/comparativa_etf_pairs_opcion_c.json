@@ -1,0 +1,52 @@
+{
+  "grid": [
+    {
+      "label": "baseline (sin re-test)",
+      "trades": 78,
+      "trades_anio": 7.8,
+      "wr": 53.85,
+      "pf": 0.766,
+      "sharpe": -0.232,
+      "max_dd": -15.86,
+      "retorno": -8.04,
+      "ventanas_aprobadas": "4/10",
+      "es_aprobado": false
+    },
+    {
+      "label": "ADF p<0.10 lb=250",
+      "trades": 14,
+      "trades_anio": 1.4,
+      "wr": 71.43,
+      "pf": 4.069,
+      "sharpe": 0.565,
+      "max_dd": -4.06,
+      "retorno": 10.6,
+      "ventanas_aprobadas": "3/10",
+      "es_aprobado": false
+    },
+    {
+      "label": "ADF p<0.05 lb=250",
+      "trades": 11,
+      "trades_anio": 1.1,
+      "wr": 72.73,
+      "pf": 3.926,
+      "sharpe": 0.49,
+      "max_dd": -4.36,
+      "retorno": 8.93,
+      "ventanas_aprobadas": "2/10",
+      "es_aprobado": false
+    },
+    {
+      "label": "ADF p<0.10 lb=125",
+      "trades": 30,
+      "trades_anio": 3.0,
+      "wr": 53.33,
+      "pf": 0.599,
+      "sharpe": -0.07,
+      "max_dd": -10.96,
+      "retorno": -2.52,
+      "ventanas_aprobadas": "3/10",
+      "es_aprobado": false
+    }
+  ]
+}

@@ -73,6 +73,13 @@ CONFIG_ETF = {
     # referencia. En la formula costos = (|dwA| + |dwB|) * cost_per_leg,
     # un cambio (entrada o salida) cuesta 10 bps; round-trip = 20 bps.
     "cost_per_leg": 0.0010,
+
+    # Opcion C: re-test de cointegracion por ventana (solo operar un par
+    # si su Engle-Granger ADF p < umbral en la ventana actual, calculado
+    # con datos anteriores al test -> sin look-ahead)
+    "retest_coint": False,          # activar re-test por ventana
+    "coint_p_threshold": 0.10,      # umbral ADF para operar el par
+    "coint_lookback": 250,          # sesiones recientes para el test (~1 ano)
 }
 
 # Nota: la simulacion trabaja con fracciones (pesos +/-50% por par,
@@ -121,6 +128,42 @@ def ajustar_par(pa: pd.Series, pb: pd.Series) -> dict:
     alpha, beta = float(coef[0]), float(coef[1])
     spread = pa - (alpha + beta * pb)
     return {"beta": beta, "alpha": alpha, "spread": spread}
+
+
+# =============================================================================
+# MAQUINA DE ESTADOS (SIMULACION POR PAR)
+# =============================================================================
+
+# =============================================================================
+# RE-TEST DE COINTEGRACION POR VENTANA (OPCION C)
+# =============================================================================
+
+def test_cointegracion(
+    pa: pd.Series,
+    pb: pd.Series,
+    lookback: int = 250,
+    p_threshold: float = 0.10,
+) -> bool:
+    """
+    Engle-Granger: ADF sobre el spread de OLS en la ventana reciente.
+    Solo usa datos hasta el corte (las ultimas `lookback` sesiones) ->
+    sin look-ahead. Devuelve True si p < p_threshold (par cointegrado
+    en la ventana actual).
+    """
+    from statsmodels.tsa.stattools import adfuller
+
+    pa_r = pa.iloc[-lookback:]
+    pb_r = pb.iloc[-lookback:]
+    if len(pa_r) < 60:
+        return False
+    ajuste = ajustar_par(pa_r, pb_r)
+    spread = ajuste["spread"].values
+    try:
+        adf = adfuller(spread, autolag="AIC", maxlag=20)
+        pval = float(adf[1])
+    except Exception:
+        return False
+    return pval < p_threshold
 
 
 # =============================================================================
@@ -242,8 +285,13 @@ def simular_par(
 # WALK-FORWARD ANALYSIS
 # =============================================================================
 
-def ejecutar_walk_forward(config: dict = None) -> dict:
-    """WFA: ventanas de entrenamiento (2y) y prueba (1y) con paso anual."""
+def ejecutar_walk_forward(config: dict = None, quiet: bool = False) -> dict:
+    """WFA: ventanas de entrenamiento (2y) y prueba (1y) con paso anual.
+
+    Opcion C (retest_coint=True): por cada ventana se re-testa la
+    cointegracion de cada par con los datos anteriores al test; si
+    ADF p >= coint_p_threshold el par queda en cash esa ventana.
+    """
     if config is None:
         config = CONFIG_ETF
 
@@ -255,8 +303,9 @@ def ejecutar_walk_forward(config: dict = None) -> dict:
     for t, s in precios.items():
         fechas = s.index if fechas is None else fechas.intersection(s.index)
     fechas = fechas.sort_values()
-    print(f"  Rango comun: {fechas[0].date()} a {fechas[-1].date()} "
-          f"({len(fechas)} sesiones)")
+    if not quiet:
+        print(f"  Rango comun: {fechas[0].date()} a {fechas[-1].date()} "
+              f"({len(fechas)} sesiones)")
 
     train_years = config["train_years"]
     test_years = config["test_years"]
@@ -289,23 +338,40 @@ def ejecutar_walk_forward(config: dict = None) -> dict:
 
     for v in ventanas:
         w_id = f"{v['train_start'].year}-{v['test_start'].year}"
-        print(f"\n  Ventana {w_id}: train {v['train_start'].date()}.."
-              f"{v['train_end'].date()} | test {v['test_start'].date()}.."
-              f"{v['test_end'].date()}")
+        if not quiet:
+            print(f"\n  Ventana {w_id}: train {v['train_start'].date()}.."
+                  f"{v['train_end'].date()} | test {v['test_start'].date()}.."
+                  f"{v['test_end'].date()}")
 
         # Entrenar beta por par en la ventana de entrenamiento
         betas = {}
+        pares_activos = []
         for a, b in config["pairs"]:
             pa_tr = precios[a].loc[v["train_start"]:v["train_end"]]
             pb_tr = precios[b].loc[v["train_start"]:v["train_end"]]
+
+            # Opcion C: re-test de cointegracion por ventana antes de operar
+            if config.get("retest_coint", False):
+                coint_ok = test_cointegracion(
+                    pa_tr, pb_tr,
+                    lookback=config.get("coint_lookback", 250),
+                    p_threshold=config.get("coint_p_threshold", 0.10))
+                if not quiet:
+                    estado = "TRADE" if coint_ok else "CASH"
+                    print(f"    {a}/{b}: ADF re-test {'PASA' if coint_ok else 'NO'} -> {estado}")
+                if not coint_ok:
+                    continue  # par en cash esta ventana
+
             ajuste = ajustar_par(pa_tr, pb_tr)
             betas[(a, b)] = ajuste
-            print(f"    {a}/{b}: beta={ajuste['beta']:.4f} alpha={ajuste['alpha']:.2f}")
+            pares_activos.append((a, b))
+            if not quiet:
+                print(f"    {a}/{b}: beta={ajuste['beta']:.4f} alpha={ajuste['alpha']:.2f}")
 
-        # Simular cada par en la ventana de prueba
+        # Simular cada par activo en la ventana de prueba
         ret_pares_list = []
         trades_ventana = []
-        for a, b in config["pairs"]:
+        for a, b in pares_activos:
             pa_te = precios[a].loc[v["test_start"]:v["test_end"]]
             pb_te = precios[b].loc[v["test_start"]:v["test_end"]]
             ajuste = betas[(a, b)]
@@ -314,11 +380,18 @@ def ejecutar_walk_forward(config: dict = None) -> dict:
             ret_pares_list.append(ret_par)
             trades_ventana.extend(trades_par)
             todos_trades.extend(trades_par)
-            print(f"    {a}/{b}: {len(trades_par)} trades | "
-                  f"WR {sum(1 for t in trades_par if t['pnl'] > 0) / max(len(trades_par), 1) * 100:.1f}%")
+            if not quiet:
+                print(f"    {a}/{b}: {len(trades_par)} trades | "
+                      f"WR {sum(1 for t in trades_par if t['pnl'] > 0) / max(len(trades_par), 1) * 100:.1f}%")
 
-        # Portafolio: media de retornos de los pares (equiponderado)
-        ret_portafolio = pd.concat(ret_pares_list, axis=1).mean(axis=1).dropna()
+        # Portafolio: media de retornos de los pares activos (equiponderado).
+        # Si ningun par paso el re-test, la ventana queda en cash (retorno 0).
+        if ret_pares_list:
+            ret_portafolio = pd.concat(ret_pares_list, axis=1).mean(axis=1).dropna()
+        else:
+            fechas_test = precios[config["pairs"][0][0]].loc[
+                v["test_start"]:v["test_end"]].index
+            ret_portafolio = pd.Series(0.0, index=fechas_test)
         retornos_por_ventana.append(ret_portafolio)
 
         # Metricas de la ventana (SOLO trades de esta ventana)
@@ -345,6 +418,7 @@ def ejecutar_walk_forward(config: dict = None) -> dict:
             "sharpe": round(sharpe, 3),
             "max_dd": round(dd, 2),
             "retorno": round(float(eq.iloc[-1] - 1) * 100, 2),
+            "pares_activos": [f"{a}/{b}" for a, b in pares_activos],
             "aprobada": wr >= 55 and pf >= 1.2,
         })
 
@@ -400,7 +474,8 @@ def ejecutar_walk_forward(config: dict = None) -> dict:
         "tiempo_seg": round(time.time() - inicio, 1),
     }
 
-    _imprimir_resultado(resultado)
+    if not quiet:
+        _imprimir_resultado(resultado)
     return resultado
 
 
@@ -452,6 +527,12 @@ def main():
                         help="Ventana del z-score en sesiones (default: config)")
     parser.add_argument("--label", type=str, default="",
                         help="Sufijo para el archivo de resultados")
+    parser.add_argument("--retest-coint", action="store_true",
+                        help="Activar re-test de cointegracion por ventana (Opcion C)")
+    parser.add_argument("--coint-p", type=float, default=None,
+                        help="Umbral ADF p para operar el par (default: config)")
+    parser.add_argument("--coint-lookback", type=int, default=None,
+                        help="Sesiones recientes para el ADF (default: config)")
     args = parser.parse_args()
 
     if not args.backtest:
@@ -468,8 +549,17 @@ def main():
         config["entry_threshold"] = args.entry
     if args.z_window is not None:
         config["z_window"] = args.z_window
+    if args.retest_coint:
+        config["retest_coint"] = True
+    if args.coint_p is not None:
+        config["coint_p_threshold"] = args.coint_p
+    if args.coint_lookback is not None:
+        config["coint_lookback"] = args.coint_lookback
     print(f"  [CONFIG] entry={config['entry_threshold']} "
-          f"z_window={config['z_window']}")
+          f"z_window={config['z_window']} "
+          f"retest_coint={config['retest_coint']} "
+          f"coint_p={config['coint_p_threshold']} "
+          f"coint_lookback={config['coint_lookback']}")
 
     resultado = ejecutar_walk_forward(config)
 
