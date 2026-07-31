@@ -289,13 +289,53 @@ de un edge latente, no ruido del grid.
    correlación de *estrategia* con el RSI(2) SPY validado (mean reversion) es
    donde TSMOM aporta valor real — no como señal del pipeline, sino como sleeve.
 
+### Opción B ejecutada: filtro de régimen ADX — 2026-07-31 (descartada)
+
+Se implementó el filtro de régimen ADX (no operar en rangos) en
+`models/tsmom_etf.py` (config: `regime_filter`, `adx_period`, `adx_threshold`,
+`regime_min_trending`). En cada rebalance, si la fracción de activos con
+ADX > umbral es menor a `min_trending`, el modelo va a cash. Grid de 10 configs:
+
+| Config | Ret% | Sharpe | MaxDD% | Vent+ | Vent% | Apto |
+|--------|-----:|:------:|:------:|:-----:|:-----:|:----:|
+| **baseline (sin filtro)** | **+57.97** | **0.724** | **-8.06** | **29/51** | **56.9%** | ❌ |
+| ADX>20 minT=0.3 | +55.08 | 0.715 | -8.06 | 28/51 | 54.9% | ❌ |
+| ADX>20 minT=0.4 | +50.23 | 0.683 | -8.06 | 29/51 | 56.9% | ❌ |
+| ADX>20 minT=0.5 | +18.23 | 0.338 | -9.32 | 25/51 | 49.0% | ❌ |
+| ADX>25 minT=0.3 | +22.02 | 0.456 | -7.77 | 25/51 | 49.0% | ❌ |
+| ADX>25 minT=0.4 | +4.90 | 0.139 | -6.73 | 20/51 | 39.2% | ❌ |
+| ADX>25 minT=0.5 | +6.46 | 0.216 | -7.44 | 14/51 | 27.5% | ❌ |
+| ADX>30 minT=0.3 | +5.24 | 0.154 | -7.30 | 18/51 | 35.3% | ❌ |
+| ADX>30 minT=0.4 | +9.60 | 0.384 | -6.00 | 15/51 | 29.4% | ❌ |
+| ADX>30 minT=0.5 | +4.49 | 0.230 | -6.28 | 7/51 | 13.7% | ❌ |
+
+**Split train/test de la mejor config del filtro (ADX>20 minT=0.3):**
+
+| Config | TRAIN 2014-2020 | TEST 2021-2026 |
+|--------|-----------------|----------------|
+| baseline | +24.20% / 0.672 / 14-28 | +24.27% / 0.897 / 12-23 |
+| ADX>20 minT=0.3 | +22.03% / 0.624 / 13-28 | +22.32% / 0.837 / 12-23 |
+
+**Conclusión (honesta): la Opción B queda descartada con evidencia.** El filtro
+ADX **empeora** el modelo: reduce retorno y Sharpe en todas las configs, y —
+crítico — **no sube la estabilidad trimestral** (la mejor config del filtro la
+deja igual o peor: 54.9% vs 56.9% del baseline). El split OOS confirma que el
+filtro es ligeramente peor también fuera de muestra (0.837 vs 0.897 de Sharpe).
+La razón: el edge del TSMOM 24m viene de **permanecer en tendencias largas**;
+cuando el filtro saca al modelo en rangos, también lo saca en los arranques de
+tendencia que son la fuente del retorno. El ruido trimestral del TSMOM es
+**inherente a la estrategia** (trend-following en trimestres planos), no un
+artefacto corregible con un gate de régimen simple.
+
+Resultados guardados en `backtesting/results/comparativa_tsmom_opcion_b.json`.
+
 ### Próximo paso (cuando se retome)
-Opción B: subir el peso de los activos de baja correlación con SPY (bonos TLT/IEI)
-o añadir filtro de régimen (no operar en rangos) para reducir el ruido trimestral.
-Opción C: combinar con el ETF pairs descartado para comparar perfiles. La Opción A
-(adoptar lookback 24m) quedó **descartada con evidencia** (ver tabla arriba),
-pero el split train/test **confirma que el edge 24m es real OOS (Sharpe 0.897)** —
-la base sobre la que se construirán las Opciones B/C.
+Opción C: combinar con el ETF pairs descartado para comparar perfiles. Queda
+como camino el valor de **portafolio**: el TSMOM 24m (edge real OOS 0.897, con
+correlación de *estrategia* baja vs RSI(2) SPY) aporta como sleeve de baja
+correlación, no como señal del pipeline. Las Opciones A y B quedaron **descartadas
+con evidencia**; el edge 24m está confirmado como real pero insuficiente para
+aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
 
 ---
 
@@ -316,9 +356,11 @@ la base sobre la que se construirán las Opciones B/C.
   pero la estabilidad trimestral quedó en 29/51 (56.9%) < 60% → **NO APTO**.
   **Hallazgo clave (split train/test):** el edge 24m es **real OOS** — elegido
   solo con train 2014-2020, sobrevive en test 2021-2026 con Sharpe 0.897
-  (+24.27%, MaxDD -6.65%). El modelo sigue **pendiente** (Sharpe<1.0 y
-  estabilidad trimestral ~52-57% < 60%), pero ya hay base real para las
-  Opciones B (filtro de régimen / bonos) y C (combinación con ETF pairs).
+  (+24.27%, MaxDD -6.65%). **Opción B (filtro ADX) ejecutada y descartada con
+  evidencia:** empeora todas las configs y no sube la estabilidad trimestral
+  (mejor filtro 54.9% vs 56.9% baseline; OOS 0.837 vs 0.897). El modelo sigue
+  **pendiente**; el valor real de TSMOM es como **sleeve de baja correlación**
+  junto al RSI(2) SPY, no como señal standalone del pipeline.
 
 ---
 

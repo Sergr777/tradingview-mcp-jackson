@@ -16,6 +16,9 @@ Metodologia (Moskowitz, Ooi & Pedersen 2012, "Time Series Momentum"):
   4. Portafolio equiponderado por riesgo entre los activos con senal
   5. Costos: bps por turnover en cada rebalance
   6. Estabilidad: desglose de rendimiento por ventanas de 3 meses (configurable)
+  7. Filtro de regimen ADX (Opcion B): si la fraccion de activos con ADX >
+     `adx_threshold` es menor a `regime_min_trending`, el mercado esta en rango
+     -> posicion en cash (no operar) en ese rebalance
 
 Evidencia:
   - Paper de referencia probado en 58 instrumentos, 25+ anos, OOS consistente
@@ -86,6 +89,12 @@ CONFIG_TSMOM = {
 
     # Minimo de activos con senal para operar (si no, cash)
     "min_assets": 3,
+
+    # Filtro de regimen ADX (Opcion B): no operar en rangos
+    "regime_filter": False,       # True = activar filtro ADX
+    "adx_period": 14,             # periodo ADX de Wilder
+    "adx_threshold": 25,          # umbral: ADX por debajo = rango
+    "regime_min_trending": 0.4,   # fraccion minima de activos trending para operar
 }
 
 
@@ -120,6 +129,53 @@ def precio_matriz(precios: Dict[str, pd.Series]) -> pd.DataFrame:
     return df.sort_index()
 
 
+def cargar_ohlc_universo(config: dict = None) -> Dict[str, pd.DataFrame]:
+    """Carga OHLC ajustados de los ETFs (para filtros de regimen tipo ADX)."""
+    if config is None:
+        config = CONFIG_TSMOM
+    data: Dict[str, pd.DataFrame] = {}
+    for t in config["universe"]:
+        ruta = os.path.join(DATA_DIR, f"{t}.csv")
+        if not os.path.exists(ruta):
+            continue
+        df = pd.read_csv(ruta, index_col=0, parse_dates=True)
+        df.index = pd.to_datetime(df.index)
+        df = df[~df.index.duplicated(keep="last")]
+        cols = [c for c in ("High", "Low", "Close") if c in df.columns]
+        if len(cols) == 3:
+            data[t] = df[cols].dropna()
+    return data
+
+
+def calcular_adx_universo(high: pd.DataFrame, low: pd.DataFrame,
+                          close: pd.DataFrame, period: int = 14) -> pd.DataFrame:
+    """ADX de Wilder (smoothing RMA) por columna, alineado al index comun.
+
+    Backward-looking por construccion (diff/shift/ewm): el valor en la fila i
+    usa SOLO datos hasta i, por lo que es seguro aplicarlo en la fecha de
+    rebalance sin look-ahead.
+    """
+    up = high.diff()
+    down = -low.diff()
+    plus_dm = pd.DataFrame(np.where((up > down) & (up > 0), up, 0.0),
+                           index=high.index, columns=high.columns)
+    minus_dm = pd.DataFrame(np.where((down > up) & (down > 0), down, 0.0),
+                            index=high.index, columns=high.columns)
+    tr1 = high - low
+    tr2 = (high - close.shift()).abs()
+    tr3 = (low - close.shift()).abs()
+    tr = tr1.combine(tr2, np.maximum).combine(tr3, np.maximum)
+
+    def wilder(df):
+        return df.ewm(alpha=1.0 / period, adjust=False).mean()
+
+    atr = wilder(tr).replace(0, np.nan)
+    plus_di = 100 * wilder(plus_dm) / atr
+    minus_di = 100 * wilder(minus_dm) / atr
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, np.nan)
+    return wilder(dx)
+
+
 # =============================================================================
 # BACKTEST TSMOM
 # =============================================================================
@@ -150,6 +206,22 @@ def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False) -> dict:
     cost = config["cost_per_turnover"]
     min_assets = config["min_assets"]
 
+    # Filtro de regimen ADX (Opcion B): no operar en rangos
+    regime_filter = config.get("regime_filter", False)
+    adx_period = config.get("adx_period", 14)
+    adx_threshold = config.get("adx_threshold", 25)
+    regime_min_trending = config.get("regime_min_trending", 0.4)
+    adx_all = None
+    if regime_filter:
+        ohlc = cargar_ohlc_universo(config)
+        high_m = pd.DataFrame(
+            {t: ohlc[t]["High"] for t in px.columns if t in ohlc}
+        ).reindex(px.index).ffill()
+        low_m = pd.DataFrame(
+            {t: ohlc[t]["Low"] for t in px.columns if t in ohlc}
+        ).reindex(px.index).ffill()
+        adx_all = calcular_adx_universo(high_m, low_m, px, adx_period)
+
     # Fechas de rebalanceo (mensual)
     fechas_rebal = px.index[lookback + vol_lookback::rebal]
     if len(fechas_rebal) == 0:
@@ -177,6 +249,18 @@ def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False) -> dict:
 
         # Solo activos con senal activa
         peso = peso.where(senal != 0, 0.0)
+
+        # Filtro de regimen ADX (Opcion B): si la fraccion de activos trending
+        # es baja, el mercado esta en rango -> no operar (cash)
+        if adx_all is not None:
+            adx_i = adx_all.iloc[i].dropna()
+            if len(adx_i) > 0:
+                frac_trending = float((adx_i > adx_threshold).mean())
+                if frac_trending < regime_min_trending:
+                    peso = pd.Series(0.0, index=px.columns)
+                    pesos_hist.append(peso.values)
+                    fechas_pesos.append(fecha)
+                    continue
 
         # Normalizar para que la vol del portafolio ~ target (escala conjunta)
         activos_activos = peso[peso != 0]
@@ -322,6 +406,12 @@ def main():
     parser.add_argument("--ventanas", type=int, default=None,
                         help="Tamano de ventana de estabilidad en meses "
                              "(default: 3 = trimestral)")
+    parser.add_argument("--regime-filter", action="store_true",
+                        help="Activar filtro de regimen ADX (Opcion B)")
+    parser.add_argument("--adx-threshold", type=float, default=None,
+                        help="Umbral ADX de rango (default: config)")
+    parser.add_argument("--min-trending", type=float, default=None,
+                        help="Fraccion minima de activos trending (default: config)")
     parser.add_argument("--quiet", action="store_true",
                         help="Silenciar salida detallada")
     args = parser.parse_args()
@@ -342,10 +432,17 @@ def main():
         config["target_vol"] = args.target_vol
     if args.ventanas is not None:
         config["ventana_meses"] = args.ventanas
+    if args.regime_filter:
+        config["regime_filter"] = True
+    if args.adx_threshold is not None:
+        config["adx_threshold"] = args.adx_threshold
+    if args.min_trending is not None:
+        config["regime_min_trending"] = args.min_trending
     if not args.quiet:
         print(f"  [CONFIG] lookback={config['lookback_months']}m "
               f"target_vol={config['target_vol']:.0%} "
-              f"ventanas={config['ventana_meses']}m")
+              f"ventanas={config['ventana_meses']}m "
+              f"regime_filter={config['regime_filter']}")
 
     resultado = ejecutar_backtest_tsmom(config, quiet=args.quiet)
 
