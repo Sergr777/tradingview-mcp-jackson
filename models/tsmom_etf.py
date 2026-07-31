@@ -7,13 +7,15 @@ RSI(2) SPY validado (mean reversion): TSMOM aporta cobertura en
 tendencias sostenidas donde el RSI(2) carece de señales.
 
 Metodologia (Moskowitz, Ooi & Pedersen 2012, "Time Series Momentum"):
-  1. Senal por activo = signo del retorno trailing de 12 meses
+  1. Senal por activo = signo del retorno trailing de N meses
+     (default 24m desde la re-validacion 2026-07-31; 12m = clasico MOP 2012)
      (+1 si retorno>0 -> LONG, -1 si retorno<0 -> SHORT)
   2. Sizing por volatilidad: posicion_i = (vol_objetivo / vol_realizada_i)
      -> cada activo contribuye la MISMA volatilidad al portafolio
   3. Rebalanceo mensual (21 sesiones)
   4. Portafolio equiponderado por riesgo entre los activos con senal
   5. Costos: bps por turnover en cada rebalance
+  6. Estabilidad: desglose de rendimiento por ventanas de 3 meses (configurable)
 
 Evidencia:
   - Paper de referencia probado en 58 instrumentos, 25+ anos, OOS consistente
@@ -23,7 +25,7 @@ Evidencia:
 Uso:
     python -m models.tsmom_etf --backtest
     python -m models.tsmom_etf --backtest --save
-    python -m models.tsmom_etf --backtest --save --lookback 12 --target-vol 0.10 --label r12v10
+    python -m models.tsmom_etf --backtest --save --lookback 24 --target-vol 0.10 --label r24v10
 """
 
 import argparse
@@ -57,16 +59,16 @@ UNIVERSO = [
 # Configuracion estrategica
 CONFIG_TSMOM = {
     "name": "TSMOM_MULTI_ETF",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "timeframe": "1d",
 
     "universe": UNIVERSO,
 
-    # Senal: retorno trailing en meses (12 = clasico de MOP 2012).
-    # NOTA: default conservador; el grid de robustez sugiere 24m como mejor
-    # config (Sharpe 0.72 vs 0.31) - pendiente de re-validacion, ver
-    # docs/pendiente_analisis.md seccion 4.
-    "lookback_months": 12,
+    # Senal: retorno trailing en meses. Re-validado 2026-07-31: el grid de
+    # robustez mostro que 24m es claramente la mejor config (Sharpe 0.72,
+    # +57.97%, MaxDD -8.06% vs 12m: 0.31 / +21.81% / -13.76%) y se adopta
+    # como config principal. Ver docs/pendiente_analisis.md seccion 4.
+    "lookback_months": 24,
 
     # Volatility targeting
     "target_vol": 0.10,          # volatilidad anual objetivo del portafolio
@@ -75,6 +77,9 @@ CONFIG_TSMOM = {
 
     # Rebalanceo mensual
     "rebalance_days": 21,
+
+    # Estabilidad: desglose por ventanas de N meses (3 = trimestral)
+    "ventana_meses": 3,
 
     # Costos: 10 bps por unidad de turnover (2 lados de entrada/salida)
     "cost_per_turnover": 0.0010,
@@ -216,19 +221,19 @@ def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False) -> dict:
     spy_ret = px["SPY"].pct_change()
     corr_spy = float(ret_neto.corr(spy_ret))
 
-    # Desglose por ventana anual (estabilidad)
+    # Desglose por ventanas de N meses (estabilidad; default 3 = trimestral)
+    ventana_meses = config.get("ventana_meses", 3)
+    freq_periodo = "Q" if ventana_meses == 3 else ("Y" if ventana_meses == 12 else f"{ventana_meses}M")
     ventanas = []
-    for anio in range(px.index[0].year + 1, px.index[-1].year + 1):
-        mask = ret_neto.index.year == anio
-        if mask.sum() < 50:
+    for periodo, r_win in ret_neto.groupby(ret_neto.index.to_period(freq_periodo)):
+        if len(r_win) < 20:
             continue
-        r_anio = ret_neto[mask]
-        eq_a = (1 + r_anio).cumprod()
+        eq_w = (1 + r_win).cumprod()
         ventanas.append({
-            "anio": anio,
-            "retorno": round(float(eq_a.iloc[-1] - 1) * 100, 2),
-            "sharpe": round(np.sqrt(252) * r_anio.mean() / max(r_anio.std(), 1e-6), 2),
-            "max_dd": round(float((eq_a / eq_a.cummax() - 1).min()) * 100, 2),
+            "periodo": str(periodo),
+            "retorno": round(float(eq_w.iloc[-1] - 1) * 100, 2),
+            "sharpe": round(np.sqrt(252) * r_win.mean() / max(r_win.std(), 1e-6), 2),
+            "max_dd": round(float((eq_w / eq_w.cummax() - 1).min()) * 100, 2),
         })
 
     ventanas_positivas = sum(1 for v in ventanas if v["retorno"] > 0)
@@ -283,17 +288,18 @@ def _imprimir_resultado(r: dict, quiet: bool = False):
     print(f"  WR rebalances: {m['wr_rebalances_pct']:.1f}%")
     print(f"  Correlacion con SPY: {m['corr_spy']:.4f} "
           f"(baja = diversifica)")
-    print(f"  Ventanas anuales positivas: {m['ventanas_positivas']}")
+    print(f"  Ventanas positivas: {m['ventanas_positivas']}")
     print("-" * 72)
     for v in r["ventanas"]:
-        print(f"  {v['anio']}: ret {v['retorno']:+6.2f}% | "
+        print(f"  {v['periodo']}: ret {v['retorno']:+6.2f}% | "
               f"sharpe {v['sharpe']:+.2f} | maxdd {v['max_dd']:6.2f}%")
     print("=" * 72)
 
     if r["es_aprobado"]:
-        print("  MODELO APTO: retorno>0, Sharpe>1.0, |MaxDD|<20%, >=60% ventanas positivas")
+        print("  MODELO APTO: retorno>0, Sharpe>1.0, |MaxDD|<20%, >=60% ventanas "
+              "(trimestrales) positivas")
     else:
-        print("  MODELO NO APTO: no cumple todos los criterios")
+        print("  MODELO NO APTO: no cumple todos los criterios (ventanas trimestrales)")
     print("=" * 72)
 
 
@@ -313,6 +319,9 @@ def main():
                         help="Volatilidad objetivo anual (default: config)")
     parser.add_argument("--label", type=str, default="",
                         help="Sufijo para el archivo de resultados")
+    parser.add_argument("--ventanas", type=int, default=None,
+                        help="Tamano de ventana de estabilidad en meses "
+                             "(default: 3 = trimestral)")
     parser.add_argument("--quiet", action="store_true",
                         help="Silenciar salida detallada")
     args = parser.parse_args()
@@ -331,9 +340,12 @@ def main():
         config["lookback_months"] = args.lookback
     if args.target_vol is not None:
         config["target_vol"] = args.target_vol
+    if args.ventanas is not None:
+        config["ventana_meses"] = args.ventanas
     if not args.quiet:
         print(f"  [CONFIG] lookback={config['lookback_months']}m "
-              f"target_vol={config['target_vol']:.0%}")
+              f"target_vol={config['target_vol']:.0%} "
+              f"ventanas={config['ventana_meses']}m")
 
     resultado = ejecutar_backtest_tsmom(config, quiet=args.quiet)
 

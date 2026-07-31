@@ -215,12 +215,50 @@ Implementación en `models/tsmom_etf.py`.
 - `backtesting/results/wfa_tsmom_etf.json` — resultados baseline
 - `backtesting/results/comparativa_tsmom_parametros.json` — grid
 
+### Re-validación Opción A (lookback 24m como config principal) — 2026-07-31
+
+Se adoptó `lookback_months: 24` como config principal (v0.2.0) y se re-validó
+con desglose de estabilidad por **ventanas trimestrales (3m)**.
+
+**Métricas globales (config 24m, target_vol 10%):**
+
+| Métrica | Valor | Umbral apto | ✅/❌ |
+|---------|-------|-------------|:-----:|
+| Retorno total OOS | **+57.97%** | >0% | ✅ |
+| Sharpe | **0.724** | >1.0 | ❌ |
+| Max DD | **-8.06%** | <20% | ✅ |
+| Trades/año | **10.0** | ~50-80 | ❌ |
+| WR rebalances | **65.9%** | — | — |
+| Correlación con SPY | **0.486** | baja | ❌ |
+| Ventanas trimestrales positivas | **29/51 (56.9%)** | ≥60% | ❌ |
+
+**Conclusiones de la re-validación:**
+1. Los números globales **reproducen exactamente** la config lb24_v10 del grid
+   (Sharpe 0.724, +57.97%, MaxDD -8.06%) — el resultado es reproducible, no un
+   artefacto del grid.
+2. La estabilidad trimestral es **el verdadero problema**: 29/51 trimestres
+   positivos (56.9%) < 60%. El retorno positivo se concentra en pocos trimestres
+   fuertes (2024Q1 +3.10%, 2025Q3 +6.07%) compensando muchos trimestres planos o
+   negativos (2016 completo negativo, 2018Q4 -5.87%, 2022Q2 -2.72%).
+3. La correlación con SPY sube a 0.486 (vs 0.353 del 12m) — el lookback más largo
+   concentra el portafolio en activos con momentum persistente, que son
+   precisamente los más correlacionados con el mercado.
+4. **El criterio trimestral (≥60%) es más estricto que el anual (≥60%)** — una
+   estrategia trend-following como TSMOM es ruidosa a escala de 3 meses por
+   construcción. Con 51 trimestres el umbral es una barra alta y honesta.
+
+**Veredicto: NO APTO incluso con la mejor config.** La Opción A del diagnóstico
+se ejecutó y no rescató el modelo: el lookback 24m mejora el retorno y el Sharpe
+(0.31→0.72) pero la estabilidad trimestral (56.9%) y el Sharpe<1.0 siguen sin
+superar los umbrales. Queda registrado como **pendiente** (no validado).
+
+Resultados guardados en `backtesting/results/wfa_tsmom_etf_r24m.json` (v0.2.0).
+
 ### Próximo paso (cuando se retome)
-Opción A: adoptar lookback 24m como config principal (Sharpe 0.72, +57.97%) y
-re-validar con ventanas 3m para comprobar estabilidad. Opción B: subir el peso de
-los activos de baja correlación con SPY (bonos TLT/IEI) o añadir filtro de régimen
-(no operar en rangos). Opción C: combinar con el ETF pairs descartado para
-comparar perfiles. El grid de 6 configs no encontró ninguna con Sharpe>1.0.
+Opción B: subir el peso de los activos de baja correlación con SPY (bonos TLT/IEI)
+o añadir filtro de régimen (no operar en rangos) para reducir el ruido trimestral.
+Opción C: combinar con el ETF pairs descartado para comparar perfiles. La Opción A
+(adoptar lookback 24m) quedó **descartada con evidencia** (ver tabla arriba).
 
 ---
 
@@ -236,8 +274,11 @@ comparar perfiles. El grid de 6 configs no encontró ninguna con Sharpe>1.0.
   sostenible out-of-sample; Opción A de frecuencia descartada con evidencia).
 - **TSMOM multi-ETF** ya tiene implementación y backtest honesto: metodología
   correcta (OOS por construcción, sin look-ahead), retorno positivo en todas las
-  configs, pero Sharpe < 1.0 en las 6 del grid. El lookback 24m (lb24_v10) es el
-  más prometedor (Sharpe 0.72, +57.97%) y queda como camino principal al retomar.
+  configs, pero Sharpe < 1.0 en las 6 del grid. La re-validación de la Opción A
+  (lookback 24m v0.2.0) reprodujo los números del grid (Sharpe 0.724, +57.97%)
+  pero la estabilidad trimestral quedó en 29/51 (56.9%) < 60% → **NO APTO**.
+  El modelo sigue **pendiente**; quedan las Opciones B (filtro de régimen / bonos)
+  y C (combinación con ETF pairs).
 
 ---
 
