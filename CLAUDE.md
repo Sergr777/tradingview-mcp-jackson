@@ -166,6 +166,10 @@ src/
 
 See `INTEGRATION_TRADINGVIEW_MCP_AGENTS.md` for full architecture details.
 
+> **Documentación del pipeline de agentes:** `models/README.md` documenta los 5
+> agentes (KRONOS, ORÁCULO, PROPHET, MNEMO, SENTIMENT), el flujo unificado de
+> confianzas (`consolidar_confianza`) y su trazabilidad en `confianza_unificada`.
+
 ## Configuration
 
 ### Environment Variables

@@ -1,0 +1,194 @@
+{
+  "timestamp": "2026-07-31 12:20:10",
+  "grid": {
+    "oversold_threshold": [
+      5,
+      8,
+      12
+    ],
+    "trend_sma_period": [
+      100,
+      200
+    ],
+    "rsi_exit_threshold": [
+      40,
+      50,
+      60
+    ],
+    "max_hold_days": [
+      5,
+      8,
+      10
+    ]
+  },
+  "total_combinaciones": 54,
+  "tiempo_seg": 13.2,
+  "objetivo_ranking": "score = retorno/max_dd (tipo Calmar)",
+  "top_10": [
+    {
+      "wr": 73.11,
+      "retorno": 2.37,
+      "pf": 1.8,
+      "sharpe": 0.682,
+      "max_dd": 0.62,
+      "trades": 119,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 50,
+        "max_hold": 8
+      },
+      "score": 3.82
+    },
+    {
+      "wr": 73.11,
+      "retorno": 2.37,
+      "pf": 1.8,
+      "sharpe": 0.682,
+      "max_dd": 0.62,
+      "trades": 119,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 50,
+        "max_hold": 10
+      },
+      "score": 3.82
+    },
+    {
+      "wr": 73.55,
+      "retorno": 2.34,
+      "pf": 1.76,
+      "sharpe": 0.674,
+      "max_dd": 0.62,
+      "trades": 121,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 50,
+        "max_hold": 5
+      },
+      "score": 3.77
+    },
+    {
+      "wr": 74.38,
+      "retorno": 2.42,
+      "pf": 1.75,
+      "sharpe": 0.675,
+      "max_dd": 0.74,
+      "trades": 121,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 60,
+        "max_hold": 5
+      },
+      "score": 3.27
+    },
+    {
+      "wr": 73.95,
+      "retorno": 2.06,
+      "pf": 1.68,
+      "sharpe": 0.589,
+      "max_dd": 0.66,
+      "trades": 119,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 40,
+        "max_hold": 8
+      },
+      "score": 3.12
+    },
+    {
+      "wr": 73.95,
+      "retorno": 2.06,
+      "pf": 1.68,
+      "sharpe": 0.589,
+      "max_dd": 0.66,
+      "trades": 119,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 40,
+        "max_hold": 10
+      },
+      "score": 3.12
+    },
+    {
+      "wr": 70.06,
+      "retorno": 2.3,
+      "pf": 1.52,
+      "sharpe": 0.566,
+      "max_dd": 0.78,
+      "trades": 167,
+      "params": {
+        "oversold": 12,
+        "sma": 200,
+        "exit_rsi": 60,
+        "max_hold": 5
+      },
+      "score": 2.95
+    },
+    {
+      "wr": 68.67,
+      "retorno": 2.21,
+      "pf": 1.52,
+      "sharpe": 0.545,
+      "max_dd": 0.76,
+      "trades": 166,
+      "params": {
+        "oversold": 12,
+        "sma": 200,
+        "exit_rsi": 50,
+        "max_hold": 8
+      },
+      "score": 2.91
+    },
+    {
+      "wr": 73.95,
+      "retorno": 2.35,
+      "pf": 1.73,
+      "sharpe": 0.651,
+      "max_dd": 0.83,
+      "trades": 119,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 60,
+        "max_hold": 8
+      },
+      "score": 2.83
+    },
+    {
+      "wr": 73.95,
+      "retorno": 2.35,
+      "pf": 1.73,
+      "sharpe": 0.651,
+      "max_dd": 0.83,
+      "trades": 119,
+      "params": {
+        "oversold": 8,
+        "sma": 200,
+        "exit_rsi": 60,
+        "max_hold": 10
+      },
+      "score": 2.83
+    }
+  ],
+  "mejor_config": {
+    "wr": 73.11,
+    "retorno": 2.37,
+    "pf": 1.8,
+    "sharpe": 0.682,
+    "max_dd": 0.62,
+    "trades": 119,
+    "params": {
+      "oversold": 8,
+      "sma": 200,
+      "exit_rsi": 50,
+      "max_hold": 8
+    },
+    "score": 3.82
+  }
+}

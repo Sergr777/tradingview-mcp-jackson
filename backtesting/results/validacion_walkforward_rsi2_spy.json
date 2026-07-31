@@ -1,0 +1,271 @@
+{
+  "timestamp": "2026-07-31 12:51:05",
+  "sistema": "RSI2_SPY",
+  "metodologia": "Walk-forward anclado (expanding) + split 80/20",
+  "nota_sharpe": "En resultados_wf el sharpe es informativo por trade (curva dispersa); el Sharpe DIARIO honesto se reporta en split_80_20 y en el resumen agregado.",
+  "nota_metodologica": "Los trades se generan sobre el dataset completo (indicadores causales, sin look-ahead) y se filtran por fecha_entrada. El PnL en USD del período OOS compone desde el capital de 2014 (mismo sizing 5% del sistema real), NO parte de un capital dedicado al test window. WR/PF/score por trade son robustos a esto; el retorno OOS debe interpretarse como el retorno de la config ganadora dentro del sistema completo, no como retorno de un capital aislado.",
+  "windows": [
+    {
+      "id": "W1",
+      "trainStart": "2014-01-01",
+      "trainEnd": "2018-01-01",
+      "testEnd": "2020-01-01"
+    },
+    {
+      "id": "W2",
+      "trainStart": "2014-01-01",
+      "trainEnd": "2020-01-01",
+      "testEnd": "2022-01-01"
+    },
+    {
+      "id": "W3",
+      "trainStart": "2014-01-01",
+      "trainEnd": "2022-01-01",
+      "testEnd": "2024-01-01"
+    },
+    {
+      "id": "W4",
+      "trainStart": "2014-01-01",
+      "trainEnd": "2024-01-01",
+      "testEnd": "2026-07-31"
+    }
+  ],
+  "config_ganadora": {
+    "oversold_threshold": 8,
+    "trend_sma_period": 200,
+    "rsi_exit_threshold": 50,
+    "max_hold_days": 8
+  },
+  "umbrales": {
+    "min_wr_oos": 55.0,
+    "min_trades_oos": 10,
+    "min_pf_oos": 1.1,
+    "wf_ratio_overfit": 0.9
+  },
+  "resultados_wf": [
+    {
+      "window": {
+        "id": "W1",
+        "trainStart": "2014-01-01",
+        "trainEnd": "2018-01-01",
+        "testEnd": "2020-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "oversold_threshold": 5,
+        "trend_sma_period": 200,
+        "rsi_exit_threshold": 60,
+        "max_hold_days": 8
+      },
+      "inSample": {
+        "trades": 15,
+        "wr": 86.67,
+        "pf": 4.74,
+        "retorno": 0.53,
+        "max_dd": 0.09,
+        "sharpe": 11.389,
+        "sharpe_tipo": "trade_informativo",
+        "score": 5.68
+      },
+      "outSample": {
+        "trades": 13,
+        "wr": 61.54,
+        "pf": 0.6,
+        "retorno": -0.33,
+        "max_dd": 0.37,
+        "sharpe": -3.317,
+        "sharpe_tipo": "trade_informativo",
+        "score": -0.91
+      },
+      "wfRatio": 0.71,
+      "configGanadoraOOS": {
+        "trades": 24,
+        "wr": 58.33,
+        "pf": 0.75,
+        "retorno": -0.27,
+        "max_dd": 0.59,
+        "sharpe": -1.672,
+        "sharpe_tipo": "trade_informativo",
+        "score": -0.45
+      },
+      "medianaGridOOS": -0.68,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W2",
+        "trainStart": "2014-01-01",
+        "trainEnd": "2020-01-01",
+        "testEnd": "2022-01-01"
+      },
+      "status": "APPROVED",
+      "bestParams": {
+        "oversold_threshold": 12,
+        "trend_sma_period": 200,
+        "rsi_exit_threshold": 60,
+        "max_hold_days": 5
+      },
+      "inSample": {
+        "trades": 74,
+        "wr": 75.68,
+        "pf": 1.4,
+        "retorno": 0.75,
+        "max_dd": 0.49,
+        "sharpe": 2.06,
+        "sharpe_tipo": "trade_informativo",
+        "score": 1.53
+      },
+      "outSample": {
+        "trades": 30,
+        "wr": 63.33,
+        "pf": 1.32,
+        "retorno": 0.35,
+        "max_dd": 0.59,
+        "sharpe": 1.768,
+        "sharpe_tipo": "trade_informativo",
+        "score": 0.59
+      },
+      "wfRatio": 0.837,
+      "configGanadoraOOS": {
+        "trades": 21,
+        "wr": 80.95,
+        "pf": 2.85,
+        "retorno": 0.9,
+        "max_dd": 0.4,
+        "sharpe": 6.234,
+        "sharpe_tipo": "trade_informativo",
+        "score": 2.25
+      },
+      "medianaGridOOS": 1.75,
+      "approved": true
+    },
+    {
+      "window": {
+        "id": "W3",
+        "trainStart": "2014-01-01",
+        "trainEnd": "2022-01-01",
+        "testEnd": "2024-01-01"
+      },
+      "status": "REJECTED",
+      "bestParams": {
+        "oversold_threshold": 12,
+        "trend_sma_period": 200,
+        "rsi_exit_threshold": 60,
+        "max_hold_days": 5
+      },
+      "inSample": {
+        "trades": 104,
+        "wr": 72.12,
+        "pf": 1.37,
+        "retorno": 1.1,
+        "max_dd": 0.75,
+        "sharpe": 1.95,
+        "sharpe_tipo": "trade_informativo",
+        "score": 1.47
+      },
+      "outSample": {
+        "trades": 25,
+        "wr": 48.0,
+        "pf": 1.03,
+        "retorno": 0.03,
+        "max_dd": 0.38,
+        "sharpe": 0.203,
+        "sharpe_tipo": "trade_informativo",
+        "score": 0.07
+      },
+      "wfRatio": 0.666,
+      "configGanadoraOOS": {
+        "trades": 21,
+        "wr": 76.19,
+        "pf": 2.36,
+        "retorno": 0.54,
+        "max_dd": 0.26,
+        "sharpe": 5.187,
+        "sharpe_tipo": "trade_informativo",
+        "score": 2.11
+      },
+      "medianaGridOOS": 1.1,
+      "approved": false
+    },
+    {
+      "window": {
+        "id": "W4",
+        "trainStart": "2014-01-01",
+        "trainEnd": "2024-01-01",
+        "testEnd": "2026-07-31"
+      },
+      "status": "APPROVED",
+      "bestParams": {
+        "oversold_threshold": 8,
+        "trend_sma_period": 200,
+        "rsi_exit_threshold": 50,
+        "max_hold_days": 8
+      },
+      "inSample": {
+        "trades": 92,
+        "wr": 70.65,
+        "pf": 1.53,
+        "retorno": 1.37,
+        "max_dd": 0.61,
+        "sharpe": 2.586,
+        "sharpe_tipo": "trade_informativo",
+        "score": 2.24
+      },
+      "outSample": {
+        "trades": 27,
+        "wr": 81.48,
+        "pf": 3.75,
+        "retorno": 0.99,
+        "max_dd": 0.13,
+        "sharpe": 9.707,
+        "sharpe_tipo": "trade_informativo",
+        "score": 7.57
+      },
+      "wfRatio": 1.153,
+      "configGanadoraOOS": {
+        "trades": 27,
+        "wr": 81.48,
+        "pf": 3.75,
+        "retorno": 0.99,
+        "max_dd": 0.13,
+        "sharpe": 9.707,
+        "sharpe_tipo": "trade_informativo",
+        "score": 7.57
+      },
+      "medianaGridOOS": 4.9,
+      "approved": true
+    }
+  ],
+  "split_80_20": {
+    "cutoff": "2024-07-19",
+    "train": {
+      "trades": 95,
+      "wr": 70.53,
+      "pf": 1.57,
+      "retorno": 1.47,
+      "max_dd": 0.61,
+      "sharpe": 2.719,
+      "sharpe_tipo": "trade_informativo",
+      "score": 2.4
+    },
+    "test": {
+      "trades": 24,
+      "wr": 83.33,
+      "pf": 3.56,
+      "retorno": 0.89,
+      "max_dd": 0.13,
+      "sharpe": 9.403,
+      "sharpe_tipo": "trade_informativo",
+      "score": 6.82
+    },
+    "wfRatio": 1.181,
+    "sharpe_diario": {
+      "train": 0.532,
+      "test": 1.796
+    }
+  },
+  "summary": {
+    "ventanas_aprobadas": 2,
+    "total_ventanas": 4
+  }
+}

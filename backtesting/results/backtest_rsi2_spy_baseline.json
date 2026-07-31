@@ -1,0 +1,38 @@
+{
+  "capital_final": 101694.49,
+  "retorno": 1.69,
+  "wr": 77.78,
+  "pf": 1.9,
+  "sharpe": 0.586,
+  "max_dd": 0.68,
+  "trades": 72,
+  "avg_win": 63.9,
+  "avg_loss": -117.76,
+  "exit_reasons": {
+    "STOP_LOSS": 9,
+    "RSI_CROSS": 58,
+    "MAX_HOLD": 5
+  },
+  "costos": 0.0006000000000000001,
+  "es_rentable": true,
+  "usar_agentes": false,
+  "stats_agentes": null,
+  "config": {
+    "name": "RSI2_SPY",
+    "version": "0.2.0",
+    "symbol": "SPY",
+    "timeframe": "1d",
+    "rsi_period": 2,
+    "oversold_threshold": 5,
+    "overbought_threshold": 95,
+    "trend_sma_period": 200,
+    "use_trend_filter": true,
+    "rsi_exit_threshold": 60,
+    "exit_on_rsi_cross": true,
+    "max_hold_days": 5,
+    "atr_period": 14,
+    "atr_mult_sl": 2.0,
+    "atr_mult_tp": 0
+  },
+  "tiempo_seg": 0.2
+}

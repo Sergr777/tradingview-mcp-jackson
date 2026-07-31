@@ -1,0 +1,62 @@
+{
+  "capital_final": 106803.83,
+  "retorno": 6.8,
+  "wr": 70.21,
+  "pf": 1.63,
+  "sharpe": 1.712,
+  "max_dd": 1.79,
+  "trades": 141,
+  "avg_win": 178.27,
+  "avg_loss": -258.21,
+  "exit_reasons": {
+    "STOP_LOSS": 18,
+    "RSI_CROSS": 122,
+    "MAX_HOLD": 1
+  },
+  "costos": 0.0006000000000000001,
+  "es_rentable": true,
+  "usar_agentes": true,
+  "stats_agentes": {
+    "prophet": {
+      "veces": 141,
+      "conf_inicial": 0.6,
+      "conf_final": 0.6122
+    },
+    "mnemo": {
+      "veces": 141,
+      "conf_inicial": 0.6122,
+      "conf_final": 0.6869
+    },
+    "sentiment": {
+      "veces": 141,
+      "conf_inicial": 0.6869,
+      "conf_final": 0.6869
+    },
+    "kronos": {
+      "veces": 141,
+      "exposure_prom": 0.9461
+    },
+    "oraculo": {
+      "veces": 141,
+      "weight_prom": 0.9631
+    }
+  },
+  "config": {
+    "name": "RSI2_SPY",
+    "version": "0.1.0",
+    "symbol": "SPY",
+    "timeframe": "1d",
+    "rsi_period": 2,
+    "oversold_threshold": 10,
+    "overbought_threshold": 90,
+    "trend_sma_period": 200,
+    "use_trend_filter": true,
+    "rsi_exit_threshold": 50,
+    "exit_on_rsi_cross": true,
+    "max_hold_days": 10,
+    "atr_period": 14,
+    "atr_mult_sl": 2.0,
+    "atr_mult_tp": 0
+  },
+  "tiempo_seg": 0.3
+}
