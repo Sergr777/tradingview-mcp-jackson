@@ -254,11 +254,48 @@ superar los umbrales. Queda registrado como **pendiente** (no validado).
 
 Resultados guardados en `backtesting/results/wfa_tsmom_etf_r24m.json` (v0.2.0).
 
+### Validación train/test del edge 24m — 2026-07-31 (hallazgo clave)
+
+Para distinguir **edge real vs. sobreajuste de selección** (24m fue elegido *porque*
+backtesteó mejor en los mismos datos — circular), se ejecutó un split estricto:
+
+- **Train:** 2014-2020 (solo con esto se elige el lookback)
+- **Test:** 2021-2026 (datos **nunca vistos** por la selección)
+
+| Lookback | TRAIN 2014-2020 (ret/Sharpe) | TEST 2021-2026 (ret/Sharpe/MaxDD) | Vent+ TEST |
+|----------|:----------------------------:|:-----------------------------------:|:----------:|
+| 6m | +10.67% / 0.281 | +2.61% / 0.115 / -9.77% | 10/23 |
+| 12m (baseline) | +4.17% / 0.136 | +12.79% / 0.445 / -10.85% | 13/23 |
+| **24m** | **+24.20% / 0.672** | **+24.27% / 0.897 / -6.65%** | 12/23 |
+
+**Selección WFA honesta:** el lookback 24m fue el mejor en train (Sharpe 0.672)
+y **el edge sobrevivió en test con Sharpe 0.897, +24.27%, MaxDD -6.65%** en datos
+que nunca vio. La consistencia train→test (0.672→0.897) confirma que **no es
+sobreajuste de selección**: el momentum de 24 meses es un punto de operación real
+de un edge latente, no ruido del grid.
+
+**Actualización del diagnóstico:**
+1. TSMOM pasa de "sin edge demostrado" a **edge real pero débil** — el split
+   demuestra que el lookback 24m fue encontrar el punto de operación correcto
+   de un edge latente, no amplificar ruido (a diferencia del ETF pairs, donde
+   el grid probó que no había edge en la base).
+2. **Sigue siendo NO APTO:** Sharpe 0.897 en test sigue < 1.0, y la estabilidad
+   trimestral OOS queda en ~52% (12/23) — el único bloqueador restante junto con
+   la correlación SPY 0.486.
+3. **Fundamento de la Opción B:** ahora hay una base real sobre la que trabajar;
+   el objetivo concreto es subir la estabilidad trimestral por encima del 60%
+   (filtro de régimen para quitar los trimestres planos/negativos).
+4. **Valor de portafolio:** aunque no alcance Sharpe>1.0 standalone, la baja
+   correlación de *estrategia* con el RSI(2) SPY validado (mean reversion) es
+   donde TSMOM aporta valor real — no como señal del pipeline, sino como sleeve.
+
 ### Próximo paso (cuando se retome)
 Opción B: subir el peso de los activos de baja correlación con SPY (bonos TLT/IEI)
 o añadir filtro de régimen (no operar en rangos) para reducir el ruido trimestral.
 Opción C: combinar con el ETF pairs descartado para comparar perfiles. La Opción A
-(adoptar lookback 24m) quedó **descartada con evidencia** (ver tabla arriba).
+(adoptar lookback 24m) quedó **descartada con evidencia** (ver tabla arriba),
+pero el split train/test **confirma que el edge 24m es real OOS (Sharpe 0.897)** —
+la base sobre la que se construirán las Opciones B/C.
 
 ---
 
@@ -277,8 +314,11 @@ Opción C: combinar con el ETF pairs descartado para comparar perfiles. La Opci�
   configs, pero Sharpe < 1.0 en las 6 del grid. La re-validación de la Opción A
   (lookback 24m v0.2.0) reprodujo los números del grid (Sharpe 0.724, +57.97%)
   pero la estabilidad trimestral quedó en 29/51 (56.9%) < 60% → **NO APTO**.
-  El modelo sigue **pendiente**; quedan las Opciones B (filtro de régimen / bonos)
-  y C (combinación con ETF pairs).
+  **Hallazgo clave (split train/test):** el edge 24m es **real OOS** — elegido
+  solo con train 2014-2020, sobrevive en test 2021-2026 con Sharpe 0.897
+  (+24.27%, MaxDD -6.65%). El modelo sigue **pendiente** (Sharpe<1.0 y
+  estabilidad trimestral ~52-57% < 60%), pero ya hay base real para las
+  Opciones B (filtro de régimen / bonos) y C (combinación con ETF pairs).
 
 ---
 
