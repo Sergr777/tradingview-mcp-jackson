@@ -1,0 +1,182 @@
+{
+  "modelo": "ETF_PAIRS_ARBITRAJE",
+  "version": "0.1.0",
+  "pares": [
+    [
+      "SPY",
+      "QQQ"
+    ],
+    [
+      "GLD",
+      "SLV"
+    ]
+  ],
+  "config": {
+    "name": "ETF_PAIRS_ARBITRAJE",
+    "version": "0.1.0",
+    "timeframe": "1d",
+    "pairs": [
+      [
+        "SPY",
+        "QQQ"
+      ],
+      [
+        "GLD",
+        "SLV"
+      ]
+    ],
+    "entry_threshold": 2.0,
+    "exit_threshold": 0.0,
+    "stop_threshold": 3.5,
+    "z_window": 60,
+    "train_years": 2,
+    "test_years": 1,
+    "step_years": 1,
+    "cost_per_leg": 0.001
+  },
+  "ventanas": [
+    {
+      "id": "2014-2016",
+      "train_start": "2014-01-02",
+      "test_start": "2016-01-02",
+      "test_end": "2017-01-02",
+      "trades": 8,
+      "wr": 50.0,
+      "pf": 3.33,
+      "sharpe": 1.274,
+      "max_dd": -2.36,
+      "retorno": 2.62,
+      "aprobada": false
+    },
+    {
+      "id": "2015-2017",
+      "train_start": "2015-01-02",
+      "test_start": "2017-01-02",
+      "test_end": "2018-01-02",
+      "trades": 5,
+      "wr": 60.0,
+      "pf": 0.527,
+      "sharpe": -0.737,
+      "max_dd": -3.4,
+      "retorno": -1.39,
+      "aprobada": false
+    },
+    {
+      "id": "2016-2018",
+      "train_start": "2016-01-02",
+      "test_start": "2018-01-02",
+      "test_end": "2019-01-02",
+      "trades": 7,
+      "wr": 85.71,
+      "pf": 7.056,
+      "sharpe": 1.041,
+      "max_dd": -1.72,
+      "retorno": 2.14,
+      "aprobada": true
+    },
+    {
+      "id": "2017-2019",
+      "train_start": "2017-01-02",
+      "test_start": "2019-01-02",
+      "test_end": "2020-01-02",
+      "trades": 8,
+      "wr": 75.0,
+      "pf": 11.756,
+      "sharpe": 1.05,
+      "max_dd": -2.58,
+      "retorno": 2.56,
+      "aprobada": true
+    },
+    {
+      "id": "2018-2020",
+      "train_start": "2018-01-02",
+      "test_start": "2020-01-02",
+      "test_end": "2021-01-02",
+      "trades": 4,
+      "wr": 25.0,
+      "pf": 0.12,
+      "sharpe": -0.981,
+      "max_dd": -10.96,
+      "retorno": -5.39,
+      "aprobada": false
+    },
+    {
+      "id": "2019-2021",
+      "train_start": "2019-01-02",
+      "test_start": "2021-01-02",
+      "test_end": "2022-01-02",
+      "trades": 8,
+      "wr": 75.0,
+      "pf": 1.795,
+      "sharpe": 0.55,
+      "max_dd": -2.74,
+      "retorno": 1.25,
+      "aprobada": true
+    },
+    {
+      "id": "2020-2022",
+      "train_start": "2020-01-02",
+      "test_start": "2022-01-02",
+      "test_end": "2023-01-02",
+      "trades": 7,
+      "wr": 14.29,
+      "pf": 0.03,
+      "sharpe": -1.991,
+      "max_dd": -6.35,
+      "retorno": -6.15,
+      "aprobada": false
+    },
+    {
+      "id": "2021-2023",
+      "train_start": "2021-01-02",
+      "test_start": "2023-01-02",
+      "test_end": "2024-01-02",
+      "trades": 7,
+      "wr": 28.57,
+      "pf": 0.228,
+      "sharpe": -0.578,
+      "max_dd": -2.35,
+      "retorno": -1.55,
+      "aprobada": false
+    },
+    {
+      "id": "2022-2024",
+      "train_start": "2022-01-02",
+      "test_start": "2024-01-02",
+      "test_end": "2025-01-02",
+      "trades": 11,
+      "wr": 72.73,
+      "pf": 2.776,
+      "sharpe": 1.059,
+      "max_dd": -3.62,
+      "retorno": 4.29,
+      "aprobada": true
+    },
+    {
+      "id": "2023-2025",
+      "train_start": "2023-01-02",
+      "test_start": "2025-01-02",
+      "test_end": "2026-01-02",
+      "trades": 13,
+      "wr": 38.46,
+      "pf": 0.367,
+      "sharpe": -1.261,
+      "max_dd": -8.56,
+      "retorno": -6.01,
+      "aprobada": false
+    }
+  ],
+  "metricas_globales": {
+    "trades": 78,
+    "trades_anio": 7.8,
+    "wr": 53.85,
+    "pf": 0.766,
+    "sharpe": -0.232,
+    "max_dd": -15.86,
+    "retorno_total_pct": -8.04,
+    "corr_spy": 0.0268
+  },
+  "ventanas_aprobadas": "4/10",
+  "es_aprobado": false,
+  "tiempo_seg": 0.2
+}
