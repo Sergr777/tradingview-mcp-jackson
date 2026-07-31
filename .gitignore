@@ -20,3 +20,7 @@ discarded/
 data/*.csv
 !data/SPY_daily_10y.csv
 backtesting/data/*.csv
+
+# Datasets ETF del modelo pendiente etf_pairs_arbitraje (regenerables con
+# backtesting/download_etf_pairs.py; si el modelo valida, se incluyen)
+data/etf/
