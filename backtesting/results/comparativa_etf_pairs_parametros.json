@@ -1,0 +1,126 @@
+{
+  "grid": [
+    {
+      "entry": 2.0,
+      "z_window": 60,
+      "label": "baseline_2.0_60"
+    },
+    {
+      "entry": 2.0,
+      "z_window": 40,
+      "label": "e2.0_z40"
+    },
+    {
+      "entry": 2.0,
+      "z_window": 30,
+      "label": "e2.0_z30"
+    },
+    {
+      "entry": 1.5,
+      "z_window": 60,
+      "label": "e1.5_z60"
+    },
+    {
+      "entry": 1.5,
+      "z_window": 40,
+      "label": "e1.5_z40"
+    },
+    {
+      "entry": 1.5,
+      "z_window": 30,
+      "label": "e1.5_z30"
+    }
+  ],
+  "resumen": [
+    {
+      "label": "baseline_2.0_60",
+      "entry": 2.0,
+      "z_window": 60,
+      "trades": 78,
+      "trades_anio": 7.8,
+      "wr": 53.85,
+      "pf": 0.766,
+      "sharpe": -0.232,
+      "max_dd": -15.86,
+      "retorno_pct": -8.04,
+      "ventanas_aprobadas": "4/10",
+      "es_aprobado": false,
+      "score": -0.5069356872635561
+    },
+    {
+      "label": "e2.0_z40",
+      "entry": 2.0,
+      "z_window": 40,
+      "trades": 112,
+      "trades_anio": 11.2,
+      "wr": 49.11,
+      "pf": 0.665,
+      "sharpe": -0.428,
+      "max_dd": -22.44,
+      "retorno_pct": -15.74,
+      "ventanas_aprobadas": "2/10",
+      "es_aprobado": false,
+      "score": -0.7014260249554367
+    },
+    {
+      "label": "e2.0_z30",
+      "entry": 2.0,
+      "z_window": 30,
+      "trades": 136,
+      "trades_anio": 13.6,
+      "wr": 49.26,
+      "pf": 0.556,
+      "sharpe": -0.699,
+      "max_dd": -28.13,
+      "retorno_pct": -24.05,
+      "ventanas_aprobadas": "2/10",
+      "es_aprobado": false,
+      "score": -0.8549591183789549
+    },
+    {
+      "label": "e1.5_z60",
+      "entry": 1.5,
+      "z_window": 60,
+      "trades": 98,
+      "trades_anio": 9.8,
+      "wr": 53.06,
+      "pf": 0.768,
+      "sharpe": -0.267,
+      "max_dd": -17.83,
+      "retorno_pct": -9.8,
+      "ventanas_aprobadas": "4/10",
+      "es_aprobado": false,
+      "score": -0.5496354458777343
+    },
+    {
+      "label": "e1.5_z40",
+      "entry": 1.5,
+      "z_window": 40,
+      "trades": 143,
+      "trades_anio": 14.3,
+      "wr": 54.55,
+      "pf": 0.726,
+      "sharpe": -0.402,
+      "max_dd": -23.83,
+      "retorno_pct": -15.73,
+      "ventanas_aprobadas": "3/10",
+      "es_aprobado": false,
+      "score": -0.6600923206042804
+    },
+    {
+      "label": "e1.5_z30",
+      "entry": 1.5,
+      "z_window": 30,
+      "trades": 178,
+      "trades_anio": 17.8,
+      "wr": 51.69,
+      "pf": 0.635,
+      "sharpe": -0.623,
+      "max_dd": -27.63,
+      "retorno_pct": -22.97,
+      "ventanas_aprobadas": "2/10",
+      "es_aprobado": false,
+      "score": -0.8313427433948607
+    }
+  ]
+}

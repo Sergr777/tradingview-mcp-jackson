@@ -127,12 +127,35 @@ Implementación completa en `models/etf_pairs_arbitraje.py` + datos en `data/etf
 - `data/etf/*.csv` — 10 ETFs diarios 2014-2026 (ajustados)
 - `backtesting/results/wfa_etf_pairs.json` — resultados WFA guardados
 
+### Resultado de la Opción A (grid de parámetros, 2026-07-31)
+
+Se probó reducir el umbral de entrada y la ventana del z-score (grid de 6 configs):
+
+| Config | Trades/año | WR% | PF | Sharpe | MaxDD% | Ret OOS% | Aprob |
+|--------|:----------:|:---:|:---:|:------:|:------:|:--------:|:-----:|
+| **baseline 2.0/60** | **7.8** | **53.85** | **0.77** | **-0.23** | **-15.86** | **-8.04** | 4/10 |
+| 2.0/40 | 11.2 | 49.11 | 0.67 | -0.43 | -22.44 | -15.74 | 2/10 |
+| 2.0/30 | 13.6 | 49.26 | 0.56 | -0.70 | -28.13 | -24.05 | 2/10 |
+| 1.5/60 | 9.8 | 53.06 | 0.77 | -0.27 | -17.83 | -9.80 | 4/10 |
+| 1.5/40 | 14.3 | 54.55 | 0.73 | -0.40 | -23.83 | -15.73 | 3/10 |
+| 1.5/30 | 17.8 | 51.69 | 0.64 | -0.62 | -27.63 | -22.97 | 2/10 |
+
+**Conclusión (honesta):** reducir el umbral **sí aumenta la frecuencia**
+(7.8 → 17.8 trades/año, como predecía el diagnóstico) pero **empeora todas
+las métricas** (PF cae, Sharpe más negativo, MaxDD y pérdida OOS crecen).
+El baseline 2.0/60 sigue siendo la mejor config por score retorno/|MaxDD|.
+Esto confirma que el problema **no es de frecuencia sino de ausencia de edge
+estable**: operar más seguido solo amplifica las pérdidas. La Opción A queda
+**descartada con evidencia**. Quedan como camino las Opciones B y C.
+
+Resultados guardados en `backtesting/results/comparativa_etf_pairs_parametros.json`
+y `backtesting/results/wfa_etf_pairs_e1.5_z40.json` (config Opción A principal).
+
 ### Próximo paso (cuando se retome)
-Opción A (recomendada): reducir umbral de entrada (`|z|>1.5`), z-window 30-40d y
-re-evaluar frecuencia y estabilidad. Opción B: añadir régimen de tendencia (ADX/
-Hurst) como filtro de "no operar en trending" — las ventanas perdedoras son las
-trending. Opción C: re-test de cointegración por ventana antes de operar (solo
-entrar si ADF p<0.10 en la ventana actual).
+Opción B: añadir régimen de tendencia (ADX/Hurst) como filtro de "no operar en
+trending" — las ventanas perdedoras son las trending. Opción C: re-test de
+cointegración por ventana antes de operar (solo entrar si ADF p<0.10 en la
+ventana actual). La Opción A (reducir umbral/frecuencia) quedó descartada.
 
 ---
 

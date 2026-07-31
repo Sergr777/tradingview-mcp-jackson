@@ -446,6 +446,12 @@ def main():
                         help="Ejecutar WFA")
     parser.add_argument("--save", action="store_true",
                         help="Guardar resultados en backtesting/results/")
+    parser.add_argument("--entry", type=float, default=None,
+                        help="Umbral de entrada |z| (default: config)")
+    parser.add_argument("--z-window", type=int, default=None,
+                        help="Ventana del z-score en sesiones (default: config)")
+    parser.add_argument("--label", type=str, default="",
+                        help="Sufijo para el archivo de resultados")
     args = parser.parse_args()
 
     if not args.backtest:
@@ -453,15 +459,26 @@ def main():
         print("\nEjemplos:")
         print("  python -m models.etf_pairs_arbitraje --backtest")
         print("  python -m models.etf_pairs_arbitraje --backtest --save")
+        print("  python -m models.etf_pairs_arbitraje --backtest --save "
+              "--entry 1.5 --z-window 40 --label optA")
         return
 
-    resultado = ejecutar_walk_forward()
+    config = dict(CONFIG_ETF)
+    if args.entry is not None:
+        config["entry_threshold"] = args.entry
+    if args.z_window is not None:
+        config["z_window"] = args.z_window
+    print(f"  [CONFIG] entry={config['entry_threshold']} "
+          f"z_window={config['z_window']}")
+
+    resultado = ejecutar_walk_forward(config)
 
     if args.save:
         output_dir = os.path.normpath(os.path.join(
             PROJECT_ROOT, "backtesting", "results"))
         os.makedirs(output_dir, exist_ok=True)
-        archivo = os.path.join(output_dir, "wfa_etf_pairs.json")
+        nombre = f"wfa_etf_pairs{'_' + args.label if args.label else ''}.json"
+        archivo = os.path.join(output_dir, nombre)
         with open(archivo, "w", encoding="utf-8") as f:
             json.dump(resultado, f, indent=2, ensure_ascii=False, default=str)
         print(f"  Guardado: {archivo}")
