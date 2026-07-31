@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-07-31T20:07:37.420907+00:00",
+  "source": "TSMOM_MULTI_ETF",
+  "config": {
+    "version": "0.2.1",
+    "lookback_months": 24,
+    "target_vol": 0.1,
+    "rebalance_days": 21,
+    "universe_size": 10
+  },
+  "portfolio": {
+    "weights": {
+      "SPY": 0.0747,
+      "QQQ": 0.0369,
+      "GLD": 0.0436,
+      "SLV": 0.0228,
+      "TLT": -0.1149,
+      "IEI": 0.1575,
+      "EEM": 0.0288,
+      "IWM": 0.0763,
+      "XLE": 0.0419,
+      "XLV": 0.0513
+    },
+    "rebalance_date": "2026-07-14",
+    "n_active": 10,
+    "gross_exposure": 0.6487,
+    "direction_neto": "LONG"
+  },
+  "market_state": {
+    "symbol": "MULTI_ETF",
+    "prices": {
+      "SPY": 751.83,
+      "QQQ": 719.69,
+      "GLD": 372.15,
+      "SLV": 53.17,
+      "TLT": 84.08,
+      "IEI": 116.74,
+      "EEM": 65.67,
+      "IWM": 294.51,
+      "XLE": 56.95,
+      "XLV": 158.29
+    },
+    "timestamp": "2026-07-14 00:00:00",
+    "atr_pct": 0.006299,
+    "vol_portfolio_anual": 0.1
+  },
+  "signal": {
+    "direction": "LONG",
+    "confidence": 0.6,
+    "type": "TSMOM_MONTHLY_REBALANCE",
+    "regime": "NORMAL"
+  },
+  "risk_parameters": {
+    "kelly_fraction": 0.05,
+    "position_size_pct": 0.2,
+    "target_vol": 0.1,
+    "max_weight": 1.5,
+    "rebalance_days": 21,
+    "lookback_months": 24
+  }
+}

@@ -411,13 +411,58 @@ la mensual es la interpretación honesta).
 Resultados guardados en `backtesting/results/portafolio_rsi2_tsmom.json`.
 Medidor: `backtesting/medir_valor_portafolio_rsi2_tsmom.py`.
 
+### Paper trading del portafolio RSI(2)+TSMOM implementado — 2026-07-31
+
+Se implementó el paper trading del **único uso con valor demostrado** del TSMOM:
+el portafolio combinado RSI(2) SPY + TSMOM 24m con w_tsmom=0.2.
+
+**Arquitectura de dos sleeves sobre el capital total C:**
+
+| Sleeve | Capital | Sizing | Señal |
+|--------|---------|--------|-------|
+| RSI(2) SPY | 80% de C | `position_size_pct` 5% **del sleeve** (SPY, LONG/SHORT) | `models/rsi2_spy_system.py --senal` → `latest_signals.json` |
+| TSMOM 24m | 20% de C | pesos objetivo del último rebalance (vol targeting, LONG/SHORT por activo) | `models/tsmom_etf.py --senal` → `latest_signals_tsmom.json` |
+
+**Cambios:
+- `models/tsmom_etf.py`**: refactor de la lógica de pesos del rebalance a
+  `_calcular_pesos_rebalance()` (behavior-preserving: el backtest 24m reproduce
+  exactamente Sharpe 0.724 / +57.97% / MaxDD -8.06%) + nuevo `generar_senal_tsmom()`
+  con modo CLI `--senal` (expone los pesos del último rebalance, sin look-ahead).
+- `portfolios/ejecutor_portafolio_rsi2_tsmom.py` **(NUEVO)**: ejecutor combinado
+  con modos `--dry-run` y `--mode paper`. El peso del sleeve TSMOM se toma de la
+  propia señal (`risk_parameters.position_size_pct`, única fuente de verdad) con
+  el constructor/`--w-tsmom` como fallback. Valida frescura (60 min) en modo paper.
+- `portfolios/test_ejecutor_portafolio_rsi2_tsmom.py` **(NUEVO)**: 12 tests del
+  contrato de sizing combinado (reparto de capital, 5% del sleeve RSI2, pesos del
+  sleeve TSMOM, resumen de exposiciones, casos límite, alerta de exposición >50%).
+
+**Validación end-to-end en dry-run (2026-07-31):**
+
+```
+Capital total:    $100,000
+w TSMOM (sleeve): 20% -> $20,000 | w RSI2 (sleeve): 80% -> $80,000
+[SKIP] sleeve RSI2: senal expirada   <- perfil normal: RSI2 ~5.7 trades/año
+[OK]   sleeve TSMOM: 10 activos LONG/SHORT (exposicion bruta 13.0%)
+Exposicion dentro del limite (50%)
+```
+
+El sleeve RSI2 quedó en cash porque su señal expiró (>60 min) — comportamiento
+correcto y consistente con el perfil conocido del RSI2 (capital ocioso ~95% del
+tiempo). El sleeve TSMOM operó sus 10 activos con pesos vol-targeting.
+
+**Estado:** el portafolio combinado (w=0.2) está **implementado y validado en
+paper/dry-run**. El TSMOM 24m sigue **pendiente como señal standalone** (NO apto
+solo), pero su **único uso operativo aprobado** — el sleeve del portafolio
+RSI2+TSMOM — ya tiene ejecutor paper funcional.
+
 ### Próximo paso (cuando se retome)
 Opción C: combinar con el ETF pairs descartado para comparar perfiles. El TSMOM
 24m tiene su valor real **demostrado como sleeve** (w≈20% sobre RSI2 SPY: Sharpe
-0.839, corr mensual 0.27) — la implementación operativa de ese portafolio (paper
-trading del combo RSI2+TSMOM) es el siguiente paso natural. Las Opciones A y B
-quedaron **descartadas con evidencia**; el edge 24m está confirmado como real pero
-insuficiente para aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
+0.839, corr mensual 0.27) y el paper trading del portafolio combinado ya está
+**implementado y validado en dry-run** (`ejecutor_portafolio_rsi2_tsmom.py`).
+Las Opciones A y B quedaron **descartadas con evidencia**; el edge 24m está
+confirmado como real pero insuficiente para aptitud standalone (Sharpe<1.0,
+estabilidad trimestral <60%).
 
 ---
 
@@ -448,7 +493,11 @@ insuficiente para aptitud standalone (Sharpe<1.0, estabilidad trimestral <60%).
   portafolio demostrado:** como sleeve al 20% sobre el RSI(2) SPY validado sube
   el Sharpe de 0.548 a 0.839 (corr mensual 0.27) — es su uso recomendado. El
   modelo sigue **pendiente** (NO apto solo), pero con valor de portafolio
-  demostrado con evidencia.
+  demostrado con evidencia. **Paper trading del portafolio RSI2+TSMOM
+  implementado y validado en dry-run** (2026-07-31): `ejecutor_portafolio_rsi2_tsmom.py`
+  combina el sizing de ambos sistemas en dos sleeves (80% RSI2 con sizing 5% del
+  sleeve + 20% TSMOM con pesos vol-targeting), con `models/tsmom_etf.py --senal`
+  (nuevo) como fuente de la señal TSMOM y 12 tests unitarios del contrato.
 
 ---
 

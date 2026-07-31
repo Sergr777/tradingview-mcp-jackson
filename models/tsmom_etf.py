@@ -36,6 +36,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from typing import Dict
 
 import numpy as np
@@ -49,6 +50,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(PROJECT_ROOT, "data", "etf")
+SIGNALS_DIR = os.path.join(PROJECT_ROOT, "data", "signals")
+SIGNAL_PATH = os.path.join(SIGNALS_DIR, "latest_signals_tsmom.json")
 
 # Universo multi-clase (coherente con el screening de ETFs ya descargado)
 UNIVERSO = [
@@ -177,6 +180,65 @@ def calcular_adx_universo(high: pd.DataFrame, low: pd.DataFrame,
 
 
 # =============================================================================
+# PESOS DE REBALANCE (compartido por backtest y senal)
+# =============================================================================
+
+def _calcular_pesos_rebalance(px: pd.DataFrame, rets: pd.DataFrame, i: int,
+                              config: dict, adx_all: pd.DataFrame = None
+                              ) -> pd.Series:
+    """Pesos objetivo del portafolio en la fecha de rebalance `i`.
+
+    Sin look-ahead por construccion: usa SOLO datos hasta `i` (retorno
+    trailing, volatilidad realizada y ADX si el filtro esta activo).
+    Devuelve la Serie de pesos (0 = cash) alineada a px.columns.
+    """
+    lookback = config["lookback_months"] * 21
+    target_vol = config["target_vol"]
+    vol_lookback = config["vol_lookback"]
+    max_weight = config["max_weight"]
+    min_assets = config["min_assets"]
+
+    ret_trailing = px.iloc[i] / px.iloc[i - lookback] - 1
+    senal = np.sign(ret_trailing)
+
+    # Volatilidad realizada anualizada
+    vol_anual = rets.iloc[max(0, i - vol_lookback):i].std() * np.sqrt(252)
+    vol_anual = vol_anual.replace(0, np.nan)
+
+    # Peso bruto por activo: target_vol / vol_realizada (vol targeting)
+    peso = target_vol / vol_anual
+    peso = peso.clip(upper=max_weight)
+
+    # Aplicar senal (long si momentum+, short si momentum-)
+    peso = peso * senal
+    peso = peso.where(senal != 0, 0.0)
+
+    # Filtro de regimen ADX (Opcion B): si la fraccion de activos trending
+    # es baja, el mercado esta en rango -> no operar (cash)
+    if config.get("regime_filter", False) and adx_all is not None:
+        adx_i = adx_all.iloc[i].dropna()
+        if len(adx_i) > 0:
+            frac_trending = float(
+                (adx_i > config.get("adx_threshold", 25)).mean())
+            if frac_trending < config.get("regime_min_trending", 0.4):
+                return pd.Series(0.0, index=px.columns)
+
+    # Normalizar para que la vol del portafolio ~ target (escala conjunta)
+    activos_activos = peso[peso != 0]
+    if len(activos_activos) >= min_assets:
+        vol_port = (peso.abs() * vol_anual).sum()
+        if vol_port > 0:
+            factor = target_vol / vol_port
+            peso = peso * factor
+            # Re-clip tras normalizar (el factor puede elevar pesos > max)
+            peso = peso.clip(lower=-max_weight, upper=max_weight)
+    else:
+        peso = pd.Series(0.0, index=px.columns)
+
+    return peso
+
+
+# =============================================================================
 # BACKTEST TSMOM
 # =============================================================================
 
@@ -204,18 +266,13 @@ def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False,
 
     rets = px.pct_change()
     lookback = config["lookback_months"] * 21  # meses -> sesiones
-    target_vol = config["target_vol"]
     vol_lookback = config["vol_lookback"]
-    max_weight = config["max_weight"]
     rebal = config["rebalance_days"]
     cost = config["cost_per_turnover"]
-    min_assets = config["min_assets"]
 
     # Filtro de regimen ADX (Opcion B): no operar en rangos
     regime_filter = config.get("regime_filter", False)
     adx_period = config.get("adx_period", 14)
-    adx_threshold = config.get("adx_threshold", 25)
-    regime_min_trending = config.get("regime_min_trending", 0.4)
     adx_all = None
     if regime_filter:
         ohlc = cargar_ohlc_universo(config)
@@ -238,47 +295,7 @@ def ejecutar_backtest_tsmom(config: dict = None, quiet: bool = False,
 
     for fecha in fechas_rebal:
         i = px.index.get_loc(fecha)
-        ret_trailing = px.iloc[i] / px.iloc[i - lookback] - 1
-        senal = np.sign(ret_trailing)
-
-        # Volatilidad realizada anualizada
-        vol_anual = rets.iloc[max(0, i - vol_lookback):i].std() * np.sqrt(252)
-        vol_anual = vol_anual.replace(0, np.nan)
-
-        # Peso bruto por activo: target_vol / vol_realizada (vol targeting)
-        peso = target_vol / vol_anual
-        peso = peso.clip(upper=max_weight)
-
-        # Aplicar senal (long si momentum+, short si momentum-)
-        peso = peso * senal
-
-        # Solo activos con senal activa
-        peso = peso.where(senal != 0, 0.0)
-
-        # Filtro de regimen ADX (Opcion B): si la fraccion de activos trending
-        # es baja, el mercado esta en rango -> no operar (cash)
-        if adx_all is not None:
-            adx_i = adx_all.iloc[i].dropna()
-            if len(adx_i) > 0:
-                frac_trending = float((adx_i > adx_threshold).mean())
-                if frac_trending < regime_min_trending:
-                    peso = pd.Series(0.0, index=px.columns)
-                    pesos_hist.append(peso.values)
-                    fechas_pesos.append(fecha)
-                    continue
-
-        # Normalizar para que la vol del portafolio ~ target (escala conjunta)
-        activos_activos = peso[peso != 0]
-        if len(activos_activos) >= min_assets:
-            vol_port = (peso.abs() * vol_anual).sum()
-            if vol_port > 0:
-                factor = target_vol / vol_port
-                peso = peso * factor
-                # Re-clip tras normalizar (el factor puede elevar pesos > max)
-                peso = peso.clip(lower=-max_weight, upper=max_weight)
-        else:
-            peso = pd.Series(0.0, index=px.columns)
-
+        peso = _calcular_pesos_rebalance(px, rets, i, config, adx_all)
         pesos_hist.append(peso.values)
         fechas_pesos.append(fecha)
 
@@ -399,6 +416,127 @@ def _imprimir_resultado(r: dict, quiet: bool = False):
 
 
 # =============================================================================
+# GENERADOR DE SENAL (para el portafolio RSI2+TSMOM)
+# =============================================================================
+
+def generar_senal_tsmom(config: dict = None) -> dict:
+    """Genera la senal de portafolio TSMOM para el sleeve combinado.
+
+    Calcula los pesos objetivo del ULTIMO rebalance disponible (sin
+    look-ahead: solo datos hasta la fecha de rebalance) y los expone en el
+    contrato de senal para el ejecutor combinado RSI2+TSMOM:
+      - portfolio.weights: dict {ticker: peso} (long +, short -)
+      - market_state.prices: precios de cierre por activo
+      - signal.direction: LONG/SHORT/FLAT segun el neto del portafolio
+      - risk_parameters.position_size_pct: peso del sleeve TSMOM (w=0.2)
+
+    Devuelve None si no hay rebalances (pocos datos).
+    """
+    if config is None:
+        config = CONFIG_TSMOM
+
+    precios = cargar_universo(config)
+    px = precio_matriz(precios)
+    rets = px.pct_change()
+    lookback = config["lookback_months"] * 21
+    vol_lookback = config["vol_lookback"]
+
+    # Filtro de regimen ADX (Opcion B) si esta activo
+    adx_all = None
+    if config.get("regime_filter", False):
+        ohlc = cargar_ohlc_universo(config)
+        high_m = pd.DataFrame(
+            {t: ohlc[t]["High"] for t in px.columns if t in ohlc}
+        ).reindex(px.index).ffill()
+        low_m = pd.DataFrame(
+            {t: ohlc[t]["Low"] for t in px.columns if t in ohlc}
+        ).reindex(px.index).ffill()
+        adx_all = calcular_adx_universo(
+            high_m, low_m, px, config.get("adx_period", 14))
+
+    fechas_rebal = px.index[lookback + vol_lookback::config["rebalance_days"]]
+    if len(fechas_rebal) == 0:
+        return None
+
+    # Ultimo rebalance disponible (el que deberia estar vigente hoy)
+    fecha = fechas_rebal[-1]
+    i = px.index.get_loc(fecha)
+    pesos = _calcular_pesos_rebalance(px, rets, i, config, adx_all)
+
+    activos = {t: round(float(w), 4) for t, w in pesos.items()
+               if abs(float(w)) > 1e-6}
+    if not activos:
+        direction = "FLAT"
+    else:
+        neto = sum(activos.values())
+        direction = "LONG" if neto > 0 else ("SHORT" if neto < 0 else "FLAT")
+
+    precios_actuales = {
+        t: round(float(px.loc[fecha, t]), 2) for t in activos}
+
+    # Volatilidad del portafolio estimada en la fecha de rebalance
+    vol_anual = rets.iloc[max(0, i - vol_lookback):i].std() * np.sqrt(252)
+    vol_port = float((pesos.abs() * vol_anual.replace(0, np.nan)).sum())
+    vol_port = vol_port if vol_port > 0 and np.isfinite(vol_port) else 0.0
+
+    senal = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "source": config["name"],
+        "config": {
+            "version": config["version"],
+            "lookback_months": config["lookback_months"],
+            "target_vol": config["target_vol"],
+            "rebalance_days": config["rebalance_days"],
+            "universe_size": len(px.columns),
+        },
+        "portfolio": {
+            "weights": activos,
+            "rebalance_date": str(fecha.date()),
+            "n_active": len(activos),
+            "gross_exposure": round(sum(abs(v) for v in activos.values()), 4),
+            "direction_neto": direction,
+        },
+        "market_state": {
+            "symbol": "MULTI_ETF",
+            "prices": precios_actuales,
+            "timestamp": str(fecha),
+            "atr_pct": round(vol_port / np.sqrt(252), 6),
+            "vol_portfolio_anual": round(vol_port, 4),
+        },
+        "signal": {
+            "direction": direction,
+            "confidence": 0.60,  # sleeve validado: portafolio w=0.2 Sharpe 0.839
+            "type": "TSMOM_MONTHLY_REBALANCE",
+            "regime": "NORMAL",
+        },
+        "risk_parameters": {
+            "kelly_fraction": 0.05,
+            "position_size_pct": 0.20,  # peso del sleeve TSMOM en el portafolio
+            "target_vol": config["target_vol"],
+            "max_weight": config["max_weight"],
+            "rebalance_days": config["rebalance_days"],
+            "lookback_months": config["lookback_months"],
+        },
+    }
+    return senal
+
+
+def guardar_senal_tsmom(senal: dict, path: str = None) -> str:
+    if path is None:
+        path = SIGNAL_PATH
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(senal, f, indent=2, ensure_ascii=False, default=str)
+    print(f"\n  [SIGNAL TSMOM] Senal de portafolio guardada: {path}")
+    p = senal["portfolio"]
+    print(f"  Rebalance {p['rebalance_date']} | {p['n_active']} activos | "
+          f"exposicion bruta {p['gross_exposure']:.2f}")
+    print(f"  Direccion neta: {p['direction_neto']}")
+    print(f"  Siguiente: python -m portfolios.ejecutor_portafolio_rsi2_tsmom --dry-run")
+    return path
+
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -425,7 +563,23 @@ def main():
                         help="Fraccion minima de activos trending (default: config)")
     parser.add_argument("--quiet", action="store_true",
                         help="Silenciar salida detallada")
+    parser.add_argument("--senal", action="store_true",
+                        help="Generar senal de portafolio para el ejecutor "
+                             "combinado RSI2+TSMOM")
     args = parser.parse_args()
+
+    if args.senal:
+        config = dict(CONFIG_TSMOM)
+        if args.lookback is not None:
+            config["lookback_months"] = args.lookback
+        if args.target_vol is not None:
+            config["target_vol"] = args.target_vol
+        senal = generar_senal_tsmom(config)
+        if senal:
+            guardar_senal_tsmom(senal)
+        else:
+            print("  Sin datos suficientes para generar senal TSMOM")
+        return 0 if senal else 1
 
     if not args.backtest:
         parser.print_help()
