@@ -62,7 +62,7 @@ UNIVERSO = [
 # Configuracion estrategica
 CONFIG_TSMOM = {
     "name": "TSMOM_MULTI_ETF",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "timeframe": "1d",
 
     "universe": UNIVERSO,

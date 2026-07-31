@@ -50,7 +50,7 @@ def main():
                 "regime_min_trending": mt,
             })
 
-    print("  GRID OPCION B — FILTRO DE REGIMEN ADX (TSMOM 24m)")
+    print("  GRID OPCION B - FILTRO DE REGIMEN ADX (TSMOM 24m)")
     print("  Objetivo: estabilidad trimestral >= 60% + Sharpe > 1.0\n")
     print(f"  {'Config':<20} {'Ret%':>8} {'Sharpe':>7} {'MaxDD%':>7} "
           f"{'Vent+':>8} {'Vent%':>6} {'WR%':>6} {'Apto':>5}")
