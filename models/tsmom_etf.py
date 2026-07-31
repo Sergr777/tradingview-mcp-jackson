@@ -62,7 +62,10 @@ CONFIG_TSMOM = {
 
     "universe": UNIVERSO,
 
-    # Senal: retorno trailing en meses (12 = clasico de MOP 2012)
+    # Senal: retorno trailing en meses (12 = clasico de MOP 2012).
+    # NOTA: default conservador; el grid de robustez sugiere 24m como mejor
+    # config (Sharpe 0.72 vs 0.31) - pendiente de re-validacion, ver
+    # docs/pendiente_analisis.md seccion 4.
     "lookback_months": 12,
 
     # Volatility targeting
