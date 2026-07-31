@@ -4,3 +4,19 @@ scripts/current.pine
 temp_*
 *.log
 discovery-log.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# CatBoost
+catboost_info/
+
+# Archivos descartados
+discarded/
+
+# Datasets crypto (se conserva solo el del modelo validado SPY)
+data/*.csv
+!data/SPY_daily_10y.csv
+backtesting/data/*.csv
