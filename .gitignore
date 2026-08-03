@@ -21,6 +21,9 @@ data/*.csv
 !data/SPY_daily_10y.csv
 backtesting/data/*.csv
 
-# Datasets ETF del modelo pendiente etf_pairs_arbitraje (regenerables con
-# backtesting/download_etf_pairs.py; si el modelo valida, se incluyen)
+# Datasets ETF — incluidos en git desde la Fase 0 del paper trading
+# (TSMOM multi-ETF es el activo del forward test RSI(2)+TSMOM; el workflow
+# de GitHub Actions los necesita en el checkout para actualizar solo lo nuevo)
 data/etf/
+!data/etf/
+!data/etf/*.csv

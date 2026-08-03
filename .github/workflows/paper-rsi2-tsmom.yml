@@ -1,0 +1,104 @@
+# =============================================================================
+# PAPER TRADING RSI(2)+TSMOM — ciclo diario en GitHub Actions (Fase 0, $0)
+# =============================================================================
+# Flujo (todos los dias laborables tras el cierre USA):
+#   1. Update incremental de datos (SPY + 10 ETFs)  -> scripts/actualizar_datos_paper.py
+#   2. Senal TSMOM                                   -> python -m models.tsmom_etf --senal
+#   3. Senal RSI(2)                                  -> python -m models.rsi2_spy_system --senal
+#   4. Ejecutar paper del portafolio combinado       -> python -m portfolios.ejecutor_portafolio_rsi2_tsmom --mode paper
+#   5. Log diario de auditoria                       -> scripts/registrar_paper_diario.py
+#   6. Commit y push de resultados (data/signals, data/trades, data/etf)
+#
+# Cron: 23:00 UTC lun-vie (~19:00 ET / 18:00 EDT, datos del cierre ya finalizados).
+# Manual: boton "Run workflow" en la pestaña Actions.
+# =============================================================================
+
+name: paper-rsi2-tsmom
+
+on:
+  schedule:
+    - cron: '0 23 * * 1-5'
+  workflow_dispatch: {}
+
+concurrency:
+  group: paper-rsi2-tsmom
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # commit/push de resultados
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # historial completo: permite push/rebase robusto
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-paper.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-paper.txt
+
+      - name: Update data (SPY + 10 ETFs)
+        run: python scripts/actualizar_datos_paper.py
+
+      - name: Generate TSMOM signal
+        run: python -m models.tsmom_etf --senal
+
+      - name: Backup crypto pipeline signal (antes de que RSI2 la sobrescriba)
+        run: |
+          if [ -f data/signals/latest_signals.json ]; then
+            cp data/signals/latest_signals.json data/signals/latest_signals_backup_paper.json
+            echo "Backup creado: latest_signals_backup_paper.json"
+          fi
+
+      - name: Generate RSI2 signal
+        run: python -m models.rsi2_spy_system --senal
+
+      - name: Execute paper portfolio
+        run: python -m portfolios.ejecutor_portafolio_rsi2_tsmom --mode paper
+
+      - name: Append daily audit log
+        run: python scripts/registrar_paper_diario.py --gh
+
+      - name: Commit and push results
+        shell: bash
+        run: |
+          git config user.name "paper-bot"
+          git config user.email "actions@github.com"
+          git add data/signals data/trades data/etf data/SPY_daily_10y.csv
+          if git diff --cached --quiet; then
+            echo "Sin cambios para commitear (datos sin novedades)"
+          else
+            git commit -m "paper: ciclo diario RSI2+TSMOM $(date -u +%Y-%m-%d)"
+            for i in 1 2 3; do
+              if git push origin main; then
+                break
+              fi
+              echo "Push fallo (intento $i), rebase y reintento..."
+              git pull --rebase origin main || true
+              sleep 5
+            done
+          fi
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-report
+          path: |
+            data/trades/ultimo_reporte_portafolio.json
+            data/trades/historial_paper_rsi2_tsmom.csv
+            data/signals/latest_signals.json
+            data/signals/latest_signals_tsmom.json
+          # RSI2 puede no disparar señal (no se escribe latest_signals.json):
+          # 'warn' evita que el job falle en rojo cuando no hay señal
+          if-no-files-found: warn
