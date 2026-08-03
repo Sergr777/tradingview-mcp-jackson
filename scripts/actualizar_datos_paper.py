@@ -42,7 +42,7 @@ ETF_DIR = Path('data/etf')
 SPY_PATH = Path('data/SPY_daily_10y.csv')
 
 OVERLAP_DAYS = 6          # dias de solape para cubrir ajustes retroactivos
-RETRIES = 3               # intentos por ticker
+RETRIES = 4               # intentos por ticker (backoff 10/20/40/80s)
 SLEEP_BETWEEN = 1.5       # segundos entre tickers (evitar rate limit)
 MIN_ROWS = 1500           # warning si un dataset diario de 10 anos trae menos
 
@@ -51,8 +51,22 @@ COLS_EXTRA = ['Dividends', 'Stock Splits', 'Capital Gains']
 
 # ─── DESCARGAS ───────────────────────────────────────────────────────────────
 
-def _download_incremental(ticker: str, start: str, retries: int = RETRIES) -> pd.DataFrame:
-    """Descarga incremental con reintentos y backoff. DataFrame o vacio."""
+def _es_rate_limit(msg: str) -> bool:
+    """Detecta rate-limit de Yahoo en el mensaje de error."""
+    return any(k in msg for k in ('Rate limit', '429', 'Too Many Requests',
+                                  'YFRateLimitError'))
+
+
+def _download_incremental(ticker: str, start: str, retries: int = 4,
+                          first_ticker: bool = False) -> pd.DataFrame:
+    """Descarga incremental con reintentos y backoff. DataFrame o vacio.
+
+    Si el PRIMER ticker recibe rate-limit de Yahoo en el primer intento,
+    aborta rapido (exit 2): la IP esta bloqueada y reintentar los 11 tickers
+    solo quemaria ~15 min. Cada run de CI usa una IP de runner distinta, asi
+    que el reintento natural es re-disparar el workflow.
+    """
+    backoff = [10, 20, 40, 80]
     for attempt in range(1, retries + 1):
         try:
             df = yf.download(
@@ -63,8 +77,17 @@ def _download_incremental(ticker: str, start: str, retries: int = RETRIES) -> pd
                 return df
             print(f'  ! {ticker}: respuesta vacia (intento {attempt}/{retries})')
         except Exception as e:  # noqa: BLE001 - aislamos el error por ticker
-            print(f'  ! {ticker}: intento {attempt}/{retries} fallo: {e}')
-        time.sleep(2 * attempt)
+            msg = str(e)
+            if _es_rate_limit(msg):
+                print(f'  ! {ticker}: RATE-LIMIT Yahoo (intento {attempt}/{retries}): '
+                      f'{msg[:110]}')
+                if first_ticker and attempt == 1:
+                    print('  >> IP bloqueada por Yahoo. Abortando rapido (exit 2); '
+                          're-dispara el workflow para obtener otra IP.')
+                    raise SystemExit(2)
+            else:
+                print(f'  ! {ticker}: intento {attempt}/{retries} fallo: {msg[:110]}')
+        time.sleep(backoff[min(attempt - 1, len(backoff) - 1)])
     return pd.DataFrame()
 
 
@@ -125,7 +148,8 @@ def _ultima_fecha(path: Path) -> pd.Timestamp:
         return pd.Timestamp.now().normalize() - pd.DateOffset(years=1)
 
 
-def actualizar_ticker(ticker: str, path: Path, full: bool = False) -> int:
+def actualizar_ticker(ticker: str, path: Path, full: bool = False,
+                      first_ticker: bool = False) -> int:
     """Actualiza un CSV. Devuelve nuevas filas agregadas (-1 = fallo)."""
     existente = pd.DataFrame()
     if path.exists():
@@ -137,7 +161,7 @@ def actualizar_ticker(ticker: str, path: Path, full: bool = False) -> int:
     else:
         start = (_ultima_fecha(path) - pd.Timedelta(days=OVERLAP_DAYS)).strftime('%Y-%m-%d')
 
-    nuevo = _normalizar(_download_incremental(ticker, start))
+    nuevo = _normalizar(_download_incremental(ticker, start, first_ticker=first_ticker))
     if nuevo.empty:
         print(f'  X {ticker}: sin datos tras {RETRIES} reintentos — CSV intacto')
         return -1
@@ -168,10 +192,11 @@ def main() -> int:
     total_nuevas = 0
 
     # SPY (formato equivalente: mismo esquema Date,OHLCV,+extras)
+    # first_ticker=True: el primer ticker decide si la IP esta bloqueada (abort rapido)
     if not args.etf_only:
         ETF_DIR.mkdir(parents=True, exist_ok=True)
         print(f'== SPY -> {SPY_PATH}')
-        n = actualizar_ticker('SPY', SPY_PATH, args.full)
+        n = actualizar_ticker('SPY', SPY_PATH, args.full, first_ticker=True)
         if n < 0:
             fallos.append('SPY')
         else:
@@ -182,9 +207,11 @@ def main() -> int:
     if not args.spy_only:
         ETF_DIR.mkdir(parents=True, exist_ok=True)
         print(f'== {len(TICKERS)} ETFs -> {ETF_DIR}/')
-        for ticker in TICKERS:
+        for i, ticker in enumerate(TICKERS):
             path = ETF_DIR / f'{ticker}.csv'
-            n = actualizar_ticker(ticker, path, args.full)
+            # Primer ticker del modo --etf-only: decide si la IP esta bloqueada
+            n = actualizar_ticker(ticker, path, args.full,
+                                  first_ticker=(i == 0 and args.spy_only))
             if n < 0:
                 fallos.append(ticker)
             else:

@@ -2,4 +2,7 @@
 # (GitHub Actions y futuro VPS). Versiones alineadas con portfolios/requirements.txt.
 numpy==1.26.4
 pandas==2.2.2
-yfinance==0.2.40
+# 0.2.55+ maneja el rate-limit de Yahoo de forma explicita (YFRateLimitError)
+# y golpea el chart API directo (sin el baile de cookies de 0.2.40, que fallaba
+# con IPs de datacenter).
+yfinance==0.2.55
