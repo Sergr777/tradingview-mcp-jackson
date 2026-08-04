@@ -10,30 +10,39 @@ jobs:
           python-version: '3.12'
       - name: Install
         run: pip install -q yfinance==0.2.55 curl_cffi==0.16.0 numpy pandas
-      - name: Diagnose Yahoo from CI IP
+      - name: Probe Yahoo JSON from CI
         run: |
           python - <<'EOF'
+          import json, time
           from curl_cffi import requests as creq
-          url = 'https://query1.finance.yahoo.com/v8/finance/chart/SPY?range=5d&interval=1d'
-          # 1) curl_cffi impersonando Chrome
-          try:
-              r = creq.get(url, impersonate='chrome', timeout=20)
-              print('A) curl_cffi chrome:', r.status_code, '| len:', len(r.text), '|', r.text[:70].replace('\n', ' '))
-          except Exception as e:
-              print('A) curl_cffi chrome: EXC', type(e).__name__, str(e)[:100])
-          # 2) requests estandar (sin impersonacion)
-          try:
-              import requests
-              r2 = requests.get(url, timeout=20, headers={'User-Agent': 'Mozilla/5.0'})
-              print('B) requests UA:', r2.status_code, '| len:', len(r2.text), '|', r2.text[:70].replace('\n', ' '))
-          except Exception as e:
-              print('B) requests UA: EXC', type(e).__name__, str(e)[:100])
-          # 3) yfinance completo con sesion curl_cffi
-          import yfinance as yf
-          try:
-              df = yf.download('SPY', start='2026-07-20', end=None, interval='1d',
-                               auto_adjust=True, progress=False, session=creq.Session(impersonate='chrome'))
-              print('C) yfinance+curl_cffi: filas', len(df))
-          except Exception as e:
-              print('C) yfinance+curl_cffi: EXC', type(e).__name__, str(e)[:120])
+          now = int(time.time())
+          p1 = now - 40*86400  # ultimos ~40 dias
+          url = 'https://query1.finance.yahoo.com/v8/finance/chart/SPY'
+          r = creq.get(url, impersonate='chrome', timeout=20, params={
+              'period1': p1, 'period2': now, 'interval': '1d',
+              'events': 'div,splits'})
+          print('HTTP', r.status_code, '| len', len(r.text))
+          d = r.json()
+          res = d.get('chart', {}).get('result') or [None]
+          print('chart.result presente:', res[0] is not None)
+          if res[0] is None:
+              print('error:', json.dumps(d.get('chart', {}).get('error', {}))[:200])
+              raise SystemExit
+          r0 = res[0]
+          print('result keys:', sorted(r0.keys()))
+          print('meta keys:', sorted(r0.get('meta', {}).keys()))
+          print('n timestamps:', len(r0.get('timestamp', [])))
+          ind = r0.get('indicators', {})
+          print('indicators keys:', sorted(ind.keys()))
+          q = ind.get('quote', [{}])[0]
+          print('quote keys:', sorted(q.keys()))
+          print('n closes:', len(q.get('close', [])))
+          print('adjclose presente:', 'adjclose' in ind)
+          if 'adjclose' in ind:
+              print('  n adjcloses:', len(ind['adjclose'][0].get('adjclose', [])))
+          # comparar ultimos 3 closes con adjcloses
+          c = [x for x in q.get('close', []) if x]
+          a = [x for x in ind.get('adjclose', [{}])[0].get('adjclose', []) if x] if 'adjclose' in ind else []
+          if c and a:
+              print('ultimo close:', round(c[-1], 2), '| ultimo adjclose:', round(a[-1], 2), '| ratio:', round(a[-1]/c[-1], 4))
           EOF
