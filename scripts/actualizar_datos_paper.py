@@ -48,6 +48,27 @@ MIN_ROWS = 1500           # warning si un dataset diario de 10 anos trae menos
 
 COLS_EXTRA = ['Dividends', 'Stock Splits', 'Capital Gains']
 
+# Sesion HTTP con fingerprint de navegador real (curl_cffi). Yahoo bloquea por
+# fingerprint las IPs de datacenter (GitHub Actions) y muchas IPs domesticas;
+# impersonar Chrome lo desbloquea sin API keys.
+_SESSION = None
+
+
+def _sesion():
+    """Sesion curl_cffi (Chrome real) o None si no esta instalado."""
+    global _SESSION
+    if _SESSION is not None:
+        return _SESSION
+    try:
+        from curl_cffi import requests as creq
+        _SESSION = creq.Session(impersonate='chrome')
+        print('  [curl_cffi] sesion Chrome real activa (desbloquea Yahoo)')
+    except Exception as e:  # noqa: BLE001
+        print(f'  [curl_cffi] no disponible ({e}); requests estandar (mas'
+              ' propenso a rate-limit)')
+        _SESSION = False
+    return _SESSION
+
 
 # ─── DESCARGAS ───────────────────────────────────────────────────────────────
 
@@ -69,9 +90,13 @@ def _download_incremental(ticker: str, start: str, retries: int = 4,
     backoff = [10, 20, 40, 80]
     for attempt in range(1, retries + 1):
         try:
+            kwargs = {}
+            sess = _sesion()
+            if sess:
+                kwargs['session'] = sess
             df = yf.download(
                 ticker, start=start, end=None,
-                interval='1d', auto_adjust=True, progress=False,
+                interval='1d', auto_adjust=True, progress=False, **kwargs,
             )
             if df is not None and not df.empty:
                 return df
@@ -99,6 +124,8 @@ def _a_index_naive(idx) -> pd.DatetimeIndex:
 
 def _normalizar(df: pd.DataFrame) -> pd.DataFrame:
     """Estandariza el df descargado: DatetimeIndex plano + columnas OHLCV + extras."""
+    if df is None or df.empty:
+        return pd.DataFrame()
     if hasattr(df.columns, 'nlevels') and df.columns.nlevels > 1:
         level0 = df.columns.get_level_values(0)
         df.columns = level0 if 'Close' in level0 else df.columns.get_level_values(-1)
@@ -211,7 +238,7 @@ def main() -> int:
             path = ETF_DIR / f'{ticker}.csv'
             # Primer ticker del modo --etf-only: decide si la IP esta bloqueada
             n = actualizar_ticker(ticker, path, args.full,
-                                  first_ticker=(i == 0 and args.spy_only))
+                                  first_ticker=(i == 0 and args.etf_only))
             if n < 0:
                 fallos.append(ticker)
             else:

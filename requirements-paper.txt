@@ -6,3 +6,7 @@ pandas==2.2.2
 # y golpea el chart API directo (sin el baile de cookies de 0.2.40, que fallaba
 # con IPs de datacenter).
 yfinance==0.2.55
+# curl_cffi: impersona Chrome real (fingerprint TLS) para desbloquear Yahoo,
+# que bloquea por fingerprint las IPs de datacenter (GitHub Actions) y muchas
+# domesticas. yfinance 0.2.55 lo usa si le pasamos una session creada aqui.
+curl_cffi==0.16.0
