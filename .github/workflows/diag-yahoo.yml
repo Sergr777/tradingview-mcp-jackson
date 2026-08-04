@@ -10,6 +10,8 @@ jobs:
           python-version: '3.12'
       - name: Install
         run: pip install -q yfinance==0.2.55 curl_cffi==0.16.0 numpy pandas
+      - name: Test yfinance versions
+        run: python scripts/_diag_yf_versions.py
       - name: Probe Yahoo JSON from CI
         run: |
           python - <<'EOF'
