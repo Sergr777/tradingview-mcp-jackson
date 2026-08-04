@@ -1,0 +1,39 @@
+name: diag-yahoo
+on: workflow_dispatch
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: pip install -q yfinance==0.2.55 curl_cffi==0.16.0 numpy pandas
+      - name: Diagnose Yahoo from CI IP
+        run: |
+          python - <<'EOF'
+          from curl_cffi import requests as creq
+          url = 'https://query1.finance.yahoo.com/v8/finance/chart/SPY?range=5d&interval=1d'
+          # 1) curl_cffi impersonando Chrome
+          try:
+              r = creq.get(url, impersonate='chrome', timeout=20)
+              print('A) curl_cffi chrome:', r.status_code, '| len:', len(r.text), '|', r.text[:70].replace('\n', ' '))
+          except Exception as e:
+              print('A) curl_cffi chrome: EXC', type(e).__name__, str(e)[:100])
+          # 2) requests estandar (sin impersonacion)
+          try:
+              import requests
+              r2 = requests.get(url, timeout=20, headers={'User-Agent': 'Mozilla/5.0'})
+              print('B) requests UA:', r2.status_code, '| len:', len(r2.text), '|', r2.text[:70].replace('\n', ' '))
+          except Exception as e:
+              print('B) requests UA: EXC', type(e).__name__, str(e)[:100])
+          # 3) yfinance completo con sesion curl_cffi
+          import yfinance as yf
+          try:
+              df = yf.download('SPY', start='2026-07-20', end=None, interval='1d',
+                               auto_adjust=True, progress=False, session=creq.Session(impersonate='chrome'))
+              print('C) yfinance+curl_cffi: filas', len(df))
+          except Exception as e:
+              print('C) yfinance+curl_cffi: EXC', type(e).__name__, str(e)[:120])
+          EOF
