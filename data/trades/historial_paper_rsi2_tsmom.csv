@@ -1,2 +1,3 @@
 fecha_utc,w_tsmom,n_posiciones,gross_pct,long_pct,short_pct,net_pct,rsi2_direction,rsi2_estado,tsmom_direction,tsmom_n_activos,warnings,fuente
 2026-08-03T19:07:32Z,0.2,10,0.1297,0.1068,0.023,0.0838,,SKIP:senal RSI2 incompleta,LONG,10,sleeve RSI2 inactivo: senal RSI2 incompleta,gh-actions
+2026-08-04T01:38:27Z,0.2,10,0.1297,0.1068,0.023,0.0838,,SKIP:no hay senal RSI2,LONG,10,sleeve RSI2 inactivo: no hay senal RSI2,gh-actions

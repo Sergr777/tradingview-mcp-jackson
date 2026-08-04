@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-08-04T01:38:27.805204+00:00",
+  "source": "RSI2+TSMOM_PORTFOLIO",
+  "config": {
+    "capital_total": 100000.0,
+    "w_tsmom_constructor": 0.2,
+    "w_tsmom_efectivo": 0.2,
+    "w_tsmom_desde_senal": false,
+    "mode": "paper",
+    "dry_run": false,
+    "version": "0.1.1"
+  },
+  "sleeves": {
+    "rsi2": {
+      "capital_sleeve": 80000.0,
+      "valida": false,
+      "razon": "no hay senal RSI2"
+    },
+    "tsmom": {
+      "capital_sleeve": 20000.0,
+      "valida": true,
+      "razon": "senal TSMOM valida",
+      "rebalance_date": "2026-07-14",
+      "n_activos": 10,
+      "gross_exposure": 0.6487
+    }
+  },
+  "positions": [
+    {
+      "sleeve": "TSMOM",
+      "asset": "SPY",
+      "direction": "LONG",
+      "weight": 0.0747,
+      "notional_usd": 1494.0,
+      "unidades": 1.9872,
+      "precio": 751.83,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "QQQ",
+      "direction": "LONG",
+      "weight": 0.0369,
+      "notional_usd": 738.0,
+      "unidades": 1.0254,
+      "precio": 719.69,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "GLD",
+      "direction": "LONG",
+      "weight": 0.0436,
+      "notional_usd": 872.0,
+      "unidades": 2.3431,
+      "precio": 372.15,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "SLV",
+      "direction": "LONG",
+      "weight": 0.0228,
+      "notional_usd": 456.0,
+      "unidades": 8.5763,
+      "precio": 53.17,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "TLT",
+      "direction": "SHORT",
+      "weight": -0.1149,
+      "notional_usd": 2298.0,
+      "unidades": 27.3311,
+      "precio": 84.08,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "IEI",
+      "direction": "LONG",
+      "weight": 0.1575,
+      "notional_usd": 3150.0,
+      "unidades": 26.983,
+      "precio": 116.74,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "EEM",
+      "direction": "LONG",
+      "weight": 0.0288,
+      "notional_usd": 576.0,
+      "unidades": 8.7711,
+      "precio": 65.67,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "IWM",
+      "direction": "LONG",
+      "weight": 0.0763,
+      "notional_usd": 1526.0,
+      "unidades": 5.1815,
+      "precio": 294.51,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "XLE",
+      "direction": "LONG",
+      "weight": 0.0419,
+      "notional_usd": 838.0,
+      "unidades": 14.7147,
+      "precio": 56.95,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    },
+    {
+      "sleeve": "TSMOM",
+      "asset": "XLV",
+      "direction": "LONG",
+      "weight": 0.0513,
+      "notional_usd": 1026.0,
+      "unidades": 6.4818,
+      "precio": 158.29,
+      "confidence": 0.6,
+      "sl_price": null,
+      "tp_price": null,
+      "source": "TSMOM_MULTI_ETF"
+    }
+  ],
+  "portfolio": {
+    "n_posiciones": 10,
+    "gross_exposure_usd": 12974.0,
+    "gross_exposure_pct": 0.1297,
+    "long_pct": 0.1068,
+    "short_pct": 0.023,
+    "net_pct": 0.0838
+  },
+  "warnings": [
+    "sleeve RSI2 inactivo: no hay senal RSI2"
+  ]
+}
