@@ -31,15 +31,31 @@ Uso:
     from models import run_ecosistema_completo
 """
 
-from .cartera_acciones_futuros_xgb import (
-    PipelineMarkovAccionesXGB,
-    PipelineMarkovFuturosXGB,
-)
-from .cartera_forex_xgb import PipelineMarkovForexXGB
-from .coordinador_macro_v2 import (
-    MacroPortfolioCoordinatorV2,
-    InvescriptoAI,
-)
+# Pipelines pesados (Markov-XGB, forex, macro) son OPCIONALES: sus modulos
+# no estan en git (desarrollo local) y requieren xgboost/lightgbm/catboost.
+# Si faltan, el paquete carga igual (nombres = None) para que los modulos
+# ligeros (tsmom_etf, rsi2_spy_system) funcionen en CI sin esos pipelines.
+try:
+    from .cartera_acciones_futuros_xgb import (
+        PipelineMarkovAccionesXGB,
+        PipelineMarkovFuturosXGB,
+    )
+    from .cartera_forex_xgb import PipelineMarkovForexXGB
+    from .coordinador_macro_v2 import (
+        MacroPortfolioCoordinatorV2,
+        InvescriptoAI,
+    )
+except (ImportError, ModuleNotFoundError) as _e:
+    PipelineMarkovAccionesXGB = None
+    PipelineMarkovFuturosXGB = None
+    PipelineMarkovForexXGB = None
+    MacroPortfolioCoordinatorV2 = None
+    InvescriptoAI = None
+    import warnings
+    warnings.warn(
+        f"Pipelines pesados (Markov-XGB/macro) no disponibles: {_e}. "
+        "Modulos ligeros (tsmom_etf, rsi2_spy_system) siguen funcionando."
+    )
 # OB imports son LAZY (importados solo cuando se usan) para evitar
 # que la falta de lightgbm/catboost bloquee el resto del ecosistema.
 def get_ob_crypto():
