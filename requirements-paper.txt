@@ -2,11 +2,11 @@
 # (GitHub Actions y futuro VPS). Versiones alineadas con portfolios/requirements.txt.
 numpy==1.26.4
 pandas==2.2.2
-# 0.2.55+ maneja el rate-limit de Yahoo de forma explicita (YFRateLimitError)
-# y golpea el chart API directo (sin el baile de cookies de 0.2.40, que fallaba
-# con IPs de datacenter).
-yfinance==0.2.55
+# 0.2.58+ arregla el parseo del chart API en IPs de nube (0.2.55-0.2.57
+# devolvian 0 filas con AttributeError 'str' has no attribute 'name' —
+# verificado empiricamente en CI con 5 versiones).
+yfinance==0.2.59
 # curl_cffi: impersona Chrome real (fingerprint TLS) para desbloquear Yahoo,
-# que bloquea por fingerprint las IPs de datacenter (GitHub Actions) y muchas
-# domesticas. yfinance 0.2.55 lo usa si le pasamos una session creada aqui.
+# que bloquea por fingerprint algunas IPs domesticas. El updater le pasa la
+# sesion a yf.download cuando esta disponible (cinturon + tirantes).
 curl_cffi==0.16.0
