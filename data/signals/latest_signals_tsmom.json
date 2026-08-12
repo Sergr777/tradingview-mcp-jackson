@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-11T23:35:54.048021+00:00",
+  "generated_at": "2026-08-12T23:36:59.028684+00:00",
   "source": "TSMOM_MULTI_ETF",
   "config": {
     "version": "0.2.1",
@@ -10,37 +10,37 @@
   },
   "portfolio": {
     "weights": {
-      "SPY": 0.0747,
-      "QQQ": 0.0369,
-      "GLD": 0.0436,
-      "SLV": 0.0228,
-      "TLT": -0.1149,
-      "IEI": 0.1575,
-      "EEM": 0.0288,
-      "IWM": 0.0763,
-      "XLE": 0.0419,
-      "XLV": 0.0513
+      "SPY": 0.0756,
+      "QQQ": 0.0425,
+      "GLD": 0.0448,
+      "SLV": 0.0278,
+      "TLT": -0.1174,
+      "IEI": 0.1597,
+      "EEM": 0.0395,
+      "IWM": 0.0692,
+      "XLE": 0.0426,
+      "XLV": 0.0629
     },
-    "rebalance_date": "2026-07-14",
+    "rebalance_date": "2026-08-12",
     "n_active": 10,
-    "gross_exposure": 0.6487,
+    "gross_exposure": 0.682,
     "direction_neto": "LONG"
   },
   "market_state": {
     "symbol": "MULTI_ETF",
     "prices": {
-      "SPY": 751.83,
-      "QQQ": 719.69,
-      "GLD": 372.15,
-      "SLV": 53.17,
-      "TLT": 84.08,
-      "IEI": 116.74,
-      "EEM": 65.67,
-      "IWM": 294.51,
-      "XLE": 56.95,
-      "XLV": 158.29
+      "SPY": 772.49,
+      "QQQ": 723.7,
+      "GLD": 404.92,
+      "SLV": 59.06,
+      "TLT": 82.11,
+      "IEI": 116.46,
+      "EEM": 66.46,
+      "IWM": 302.71,
+      "XLE": 61.03,
+      "XLV": 168.44
     },
-    "timestamp": "2026-07-14 00:00:00",
+    "timestamp": "2026-08-12 00:00:00",
     "atr_pct": 0.006299,
     "vol_portfolio_anual": 0.1
   },
