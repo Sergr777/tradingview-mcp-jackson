@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T01:02:19.022976+00:00",
+  "generated_at": "2026-09-17T01:04:19.483754+00:00",
   "source": "RSI2+TSMOM_PORTFOLIO",
   "config": {
     "capital_total": 100000.0,
@@ -22,7 +22,7 @@
       "razon": "senal TSMOM valida",
       "rebalance_date": "2026-09-11",
       "n_activos": 10,
-      "gross_exposure": 0.7743
+      "gross_exposure": 0.7737
     }
   },
   "positions": [
@@ -121,10 +121,10 @@
       "sleeve": "TSMOM",
       "asset": "IWM",
       "direction": "LONG",
-      "weight": 0.082,
-      "notional_usd": 1640.0,
-      "unidades": 5.6769,
-      "precio": 288.89,
+      "weight": 0.0814,
+      "notional_usd": 1628.0,
+      "unidades": 5.65,
+      "precio": 288.14,
       "confidence": 0.6,
       "sl_price": null,
       "tp_price": null,
@@ -159,11 +159,11 @@
   ],
   "portfolio": {
     "n_posiciones": 10,
-    "gross_exposure_usd": 15486.0,
-    "gross_exposure_pct": 0.1549,
-    "long_pct": 0.1359,
+    "gross_exposure_usd": 15474.0,
+    "gross_exposure_pct": 0.1547,
+    "long_pct": 0.1358,
     "short_pct": 0.019,
-    "net_pct": 0.1169
+    "net_pct": 0.1168
   },
   "warnings": [
     "sleeve RSI2 inactivo: no hay senal RSI2"
