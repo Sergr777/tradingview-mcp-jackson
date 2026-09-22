@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-19T00:56:04.624438+00:00",
+  "generated_at": "2026-09-22T01:24:50.581565+00:00",
   "source": "RSI2+TSMOM_PORTFOLIO",
   "config": {
     "capital_total": 100000.0,
@@ -32,8 +32,8 @@
       "direction": "LONG",
       "weight": 0.1231,
       "notional_usd": 2462.0,
-      "unidades": 3.2213,
-      "precio": 764.29,
+      "unidades": 3.2293,
+      "precio": 762.4,
       "confidence": 0.6,
       "sl_price": null,
       "tp_price": null,
